@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감성 힐링 다이어리</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --primary-color: #a78bfa;
+            --primary-text-color: #ffffff;
+            --card-bg-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 감정별 테마 */
+        .theme-happy { --primary-color: #facc15; --bg-color: #fffbeb; }
+        .theme-sad { --primary-color: #60a5fa; --bg-color: #eff6ff; }
+        .theme-stress { --primary-color: #f87171; --bg-color: #fff1f2; }
+        .theme-tired { --primary-color: #4ade80; --bg-color: #f0fdf4; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease;
+        }
+
+        .heading-font { font-family: 'Gaegu', cursive; }
+        .card {
+            background-color: var(--card-bg-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--primary-text-color);
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .text-primary { color: var(--primary-color); }
+        .border-primary { border-color: var(--primary-color); }
+        .ring-primary:focus { --tw-ring-color: var(--primary-color); }
+        
+        .emotion-btn {
+            transition: all 0.3s ease;
+        }
+        .emotion-btn.selected {
+            transform: scale(1.1);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-bold heading-font mb-2">
+                <i class="fa-solid fa-cloud-sun text-primary"></i> 감성 힐링 다이어리
+            </h1>
+            <p class="text-gray-500">오늘 당신의 마음은 어떤 색인가요?</p>
+        </header>
+
+        <!-- 감정 선택 -->
+        <section id="emotion-selector" class="mb-8 p-4 bg-white/50 rounded-xl shadow-sm">
+            <h2 class="text-xl font-bold text-center mb-4">지금 어떤 기분이신가요?</h2>
+            <div class="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
+                <button data-emotion="happy" class="emotion-btn flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-transparent">
+                    <span class="text-4xl">😄</span> <span class="font-semibold">행복</span>
+                </button>
+                <button data-emotion="sad" class="emotion-btn flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-transparent">
+                    <span class="text-4xl">😢</span> <span class="font-semibold">슬픔</span>
+                </button>
+                <button data-emotion="stress" class="emotion-btn flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-transparent">
+                    <span class="text-4xl">😠</span> <span class="font-semibold">스트레스</span>
+                </button>
+                <button data-emotion="tired" class="emotion-btn flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-transparent">
+                    <span class="text-4xl">😴</span> <span class="font-semibold">피로</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 콘텐츠 영역 (초기 숨김) -->
+        <main id="content-area" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 음악 & 힐링 콘텐츠 -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- 음악 추천 -->
+                    <section>
+                        <h2 class="text-2xl font-bold heading-font mb-4 text-primary">
+                            <i class="fas fa-music"></i> 마음을 위한 플레이리스트
+                        </h2>
+                        <div id="music-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+                    </section>
+                    
+                    <!-- 힐링 콘텐츠 -->
+                    <section>
+                        <h2 class="text-2xl font-bold heading-font mb-4 text-primary">
+                             <i class="fas fa-quote-left"></i> 오늘의 힐링 메시지
+                        </h2>
+                        <div id="healing-content" class="card p-6 rounded-lg text-center"></div>
+                    </section>
+                </div>
+                
+                <!-- 감정 기록 -->
+                <div class="lg:col-span-1">
+                    <section>
+                        <h2 class="text-2xl font-bold heading-font mb-4 text-primary">
+                            <i class="fas fa-pencil-alt"></i> 오늘의 감정 기록하기
+                        </h2>
+                        <div class="card p-6 rounded-lg">
+                            <textarea id="diary-input" rows="4" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 ring-primary" placeholder="오늘의 감정을 자유롭게 적어보세요..."></textarea>
+                            <button id="save-diary" class="btn-primary w-full py-2 mt-4 rounded-md font-semibold transition">기록 저장하기</button>
+                        </div>
+                        <div class="mt-6">
+                            <h3 class="font-bold mb-2">나의 감정 기록들</h3>
+                            <div id="diary-list" class="space-y-2"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 음악 재생 모달 -->
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg relative overflow-hidden">
+            <button id="close-modal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-800 transition-colors z-10">
+                <i class="fas fa-times fa-lg"></i>
+            </button>
+            <div id="player-container" class="aspect-video bg-black"></div>
+            <div class="p-6">
+                <h2 id="modal-title" class="text-2xl font-bold"></h2>
+                <p id="modal-artist" class="text-gray-600 text-lg"></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mockData = {
+            music: [
+                // happy
+                { id: 1, title: "After LIKE", artist: "IVE (아이브)", youtubeId: "F0B7HDiY-10", emotion: "happy" },
+                { id: 2, title: "Hype Boy", artist: "NewJeans", youtubeId: "11cta61wi0g", emotion: "happy" },
+                { id: 3, title: "Perfect Night", artist: "LE SSERAFIM (르세라핌)", youtubeId: "hLvWy2b857I", emotion: "happy" },
+                { id: 4, title: "Magnetic", artist: "ILLIT (아일릿)", youtubeId: "Vk5-c_v4gMU", emotion: "happy"},
+                
+                // sad
+                { id: 5, title: "Ditto", artist: "NewJeans", youtubeId: "pSUydWEqKwE", emotion: "sad" },
+                { id: 6, title: "Either Way", artist: "IVE (아이브)", youtubeId: "NF0M-S35dBE", emotion: "sad" },
+                { id: 7, title: "화(火花)", artist: "(G)I-DLE (여자)아이들", youtubeId: "z3szNvgQxHo", emotion: "sad" },
+                { id: 8, title: "Feel Special", artist: "TWICE (트와이스)", youtubeId: "3ymwOvzhwHs", emotion: "sad"},
+                
+                // stress
+                { id: 9, title: "Supernova", artist: "aespa (에스파)", youtubeId: "phuiiNCxRMg", emotion: "stress" },
+                { id: 10, title: "ANTIFRAGILE", artist: "LE SSERAFIM (르세라핌)", youtubeId: "pyf8cbqyfPs", emotion: "stress" },
+                { id: 11, title: "Super Lady", artist: "(G)I-DLE (여자)아이들", youtubeId: "60O_frN12_A", emotion: "stress"},
+                { id: 12, title: "Midas Touch", artist: "KISS OF LIFE", youtubeId: "o_nfdzM_0KE", emotion: "stress"},
+
+                // tired
+                { id: 13, title: "Life's Too Short", artist: "aespa (에스파)", youtubeId: "z2b2E_O9g_A", emotion: "tired" },
+                { id: 14, title: "Psycho", artist: "Red Velvet (레드벨벳)", youtubeId: "uR8Mrt1IpXg", emotion: "tired" },
+                { id: 15, title: "Swan Song", artist: "LE SSERAFIM (르세라핌)", youtubeId: "4OC_42yH82w", emotion: "tired" },
+                { id: 16, title: "Closer", artist: "오마이걸 (OH MY GIRL)", youtubeId: "isUudT58Xfk", emotion: "tired"}
+            ],
+            healing: {
+                happy: [
+                    { type: 'quote', text: '가장 큰 행복은 바로 오늘, 이 순간에 있다.', author: '월트 휘트먼' },
+                    { type: 'poem', text: '자세히 보아야 예쁘다. 오래 보아야 사랑스럽다. 너도 그렇다.', author: '나태주, 풀꽃' }
+                ],
+                sad: [
+                    { type: 'quote', text: '눈물이 나는 건 마음이 살아있다는 증거야. 괜찮아, 울어도 돼.', author: '누군가의 위로' },
+                    { type: 'poem', text: '울지 마라. 외로우니까 사람이다. 살아간다는 것은 외로움을 견디는 일이다.', author: '정호승, 수선화에게' }
+                ],
+                stress: [
+                    { type: 'quote', text: '너무 애쓰지마. 잠시 숨을 고르는 시간도 필요해.', author: '마음의 소리' },
+                    { type: 'poem', text: '괜찮아, 다 괜찮아. 그냥 흘러가는 대로, 바람 부는 대로.', author: '어느 좋은 날' }
+                ],
+                tired: [
+                    { type: 'quote', text: '오늘 하루도 정말 수고 많았어. 너는 충분히 잘하고 있어.', author: '따뜻한 응원' },
+                    { type: 'poem', text: '쉬어가도 괜찮아. 아무도 너를 재촉하지 않아.', author: '쉼표' }
+                ]
+            }
+        };
+
+        const body = document.body;
+        const emotionSelector = document.getElementById('emotion-selector');
+        const contentArea = document.getElementById('content-area');
+        const musicList = document.getElementById('music-list');
+        const healingContent = document.getElementById('healing-content');
+        const diaryInput = document.getElementById('diary-input');
+        const saveDiaryBtn = document.getElementById('save-diary');
+        const diaryList = document.getElementById('diary-list');
+        
+        const modal = document.getElementById('modal');
+        const closeModalBtn = document.getElementById('close-modal');
+
+        let diaryEntries = JSON.parse(localStorage.getItem('emotion-diary')) || [];
+
+        const saveDiary = () => {
+            localStorage.setItem('emotion-diary', JSON.stringify(diaryEntries));
+        };
+
+        const renderDiary = () => {
+            diaryList.innerHTML = '';
+            if (diaryEntries.length === 0) {
+                diaryList.innerHTML = `<p class="text-gray-400 text-sm text-center">아직 기록이 없어요.</p>`;
+                return;
+            }
+            // 최신 글이 위로 오도록
+            const reversedEntries = [...diaryEntries].reverse();
+            reversedEntries.forEach(entry => {
+                const entryEl = document.createElement('div');
+                entryEl.className = 'bg-white/60 p-3 rounded-md text-sm';
+                entryEl.innerHTML = `
+                    <p class="font-semibold text-gray-700">${new Date(entry.date).toLocaleDateString('ko-KR')}</p>
+                    <p class="text-gray-600">${entry.text}</p>
+                `;
+                diaryList.appendChild(entryEl);
+            });
+        };
+
+        const selectEmotion = (emotion) => {
+            // 테마 변경
+            body.className = `theme-${emotion}`;
+
+            // 버튼 활성화
+            document.querySelectorAll('.emotion-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.emotion === emotion);
+            });
+            
+            // 콘텐츠 렌더링
+            renderMusic(emotion);
+            renderHealingContent(emotion);
+            
+            // 콘텐츠 영역 보이기
+            contentArea.classList.remove('hidden');
+        };
+
+        const renderMusic = (emotion) => {
+            musicList.innerHTML = '';
+            const filteredMusic = mockData.music.filter(m => m.emotion === emotion);
+            filteredMusic.forEach(music => {
+                const musicCard = document.createElement('div');
+                musicCard.className = 'card rounded-lg overflow-hidden cursor-pointer';
+                musicCard.dataset.id = music.id;
+                musicCard.innerHTML = `
+                    <img src="https://i.ytimg.com/vi/${music.youtubeId}/mqdefault.jpg" class="w-full h-24 object-cover">
+                    <div class="p-2">
+                        <h4 class="font-bold text-sm truncate">${music.title}</h4>
+                        <p class="text-xs text-gray-500 truncate">${music.artist}</p>
+                    </div>
+                `;
+                musicList.appendChild(musicCard);
+            });
+        };
+        
+        const renderHealingContent = (emotion) => {
+            const contents = mockData.healing[emotion];
+            const content = contents[Math.floor(Math.random() * contents.length)];
+            healingContent.innerHTML = `
+                <p class="text-lg italic">"${content.text}"</p>
+                <p class="mt-4 text-gray-500">- ${content.author} -</p>
+            `;
+        };
+
+        const openModal = (music) => {
+            document.getElementById('modal-title').textContent = music.title;
+            document.getElementById('modal-artist').textContent = music.artist;
+            document.getElementById('player-container').innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${music.youtubeId}?autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            modal.classList.remove('hidden');
+        };
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            document.getElementById('player-container').innerHTML = '';
+        };
+
+        // Event Listeners
+        emotionSelector.addEventListener('click', (e) => {
+            const button = e.target.closest('.emotion-btn');
+            if (button) {
+                selectEmotion(button.dataset.emotion);
+            }
+        });
+
+        saveDiaryBtn.addEventListener('click', () => {
+            const text = diaryInput.value.trim();
+            if (text) {
+                diaryEntries.push({ text, date: new Date() });
+                saveDiary();
+                renderDiary();
+                diaryInput.value = '';
+            }
+        });
+
+        musicList.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            if (card) {
+                const music = mockData.music.find(m => m.id == card.dataset.id);
+                if(music) openModal(music);
+            }
+        });
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Initial render
+        renderDiary();
+    });
+    </script>
+</body>
+</html>

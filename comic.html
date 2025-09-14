@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만화카페 | a cartoon cafe</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Noto Sans KR for Korean font -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 커스텀 CSS는 이곳에 작성합니다. */
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        body.dark {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        body.dark .bg-white { background-color: #4a4a4a !important; }
+        body.dark .bg-gray-100 { background-color: #3b3b3b !important; }
+        body.dark .shadow-lg { box-shadow: 0 4px 10px rgba(255,255,255,0.05) !important; }
+        body.dark .comic-card:hover { box-shadow: 0 10px 20px rgba(255,255,255,0.1) !important; }
+        body.dark .banner { background-color: #5e4d41 !important; color: #f8e5c8 !important; }
+        body.dark .text-gray-500 { color: #b0b0b0 !important; }
+        body.dark .text-gray-600 { color: #c0c0c0 !important; }
+        body.dark .nav-link { color: #e0e0e0; }
+        body.dark .nav-link:hover { color: #e4a15f !important; }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .comic-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .comic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .comic-card-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .comic-card:hover .comic-card-image {
+            transform: scale(1.05);
+        }
+
+        .banner {
+            background-color: #f8e5c8;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .book-modal {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .page-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Star rating styles */
+        .rating-stars .fa-star {
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.2s;
+        }
+
+        .rating-stars .fa-star.filled {
+            color: #ffc107;
+        }
+
+        /* Improved Payment Modal Styles */
+        #payment-modal .modal-content {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 1.5rem; /* 24px */
+        }
+    </style>
+</head>
+<body class="bg-[#f8f5f0] min-h-screen text-[#4a4a4a] transition-colors duration-500">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Controls (Music, Dark Mode) -->
+        <div class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2">
+            <button id="music-toggle-btn" class="w-12 h-12 rounded-full bg-white bg-opacity-80 backdrop-blur-sm shadow-md text-[#e4a15f] hover:bg-opacity-100 transition-colors">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button id="dark-mode-toggle-btn" class="w-12 h-12 rounded-full bg-white bg-opacity-80 backdrop-blur-sm shadow-md text-[#4a4a4a] hover:bg-opacity-100 transition-colors">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <nav class="flex justify-between items-center py-4 rounded-xl bg-white bg-opacity-80 backdrop-blur-sm shadow-md mb-8 px-6">
+            <div class="text-2xl font-bold text-[#7d6b5e]">만화카페</div>
+            <ul class="flex space-x-4 md:space-x-8 text-sm md:text-base font-semibold">
+                <li><a href="#" class="nav-link text-[#7d6b5e] hover:text-[#e4a15f] transition-colors" data-section="home">홈</a></li>
+                <li><a href="#" class="nav-link text-[#7d6b5e] hover:text-[#e4a15f] transition-colors" data-section="recommendations">추천</a></li>
+                <li><a href="#" class="nav-link text-[#7d6b5e] hover:text-[#e4a15f] transition-colors" data-section="search">검색</a></li>
+                <li><a href="#" class="nav-link text-[#7d6b5e] hover:text-[#e4a15f] transition-colors" data-section="favorites">즐겨찾기</a></li>
+                <li><a href="#" class="nav-link text-[#7d6b5e] hover:text-[#e4a15f] transition-colors" data-section="menu">메뉴판</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Sections -->
+        <main class="flex flex-col space-y-12">
+
+            <!-- Home Section -->
+            <section id="home-section" class="section">
+                <!-- Banner -->
+                <div class="banner p-6 md:p-10 text-center">
+                    <h1 class="text-3xl md:text-5xl font-bold text-[#7d6b5e] mb-2">만화카페에 오신 것을 환영합니다</h1>
+                    <p class="text-lg md:text-xl font-medium text-[#a18a7a]">따뜻한 커피와 함께 마음껏 즐겨보세요 ☕📖</p>
+                </div>
+                
+                <!-- Today's Recommendations -->
+                <div id="recommendations-container" class="mt-12">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-[#4a4a4a]">오늘의 추천 만화 ✨</h2>
+                    <div id="recommended-comics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- 추천 만화가 여기에 동적으로 삽입됩니다. -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Search Section -->
+            <section id="search-section" class="section hidden">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-[#4a4a4a]">만화 검색하기 🔍</h2>
+                <div class="flex justify-center mb-8">
+                    <input type="text" id="search-input" placeholder="만화 제목을 입력하세요..." class="w-full max-w-lg p-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e4a15f] shadow-sm">
+                </div>
+                <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 검색 결과가 여기에 동적으로 삽입됩니다. -->
+                </div>
+                <div id="no-results-message" class="text-center text-lg text-gray-500 hidden mt-8">검색 결과가 없습니다.</div>
+            </section>
+            
+            <!-- All Comics Section (Recommendations section is now for all) -->
+            <section id="recommendations-section" class="section hidden">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-[#4a4a4a]">모든 만화 보기 🏷️</h2>
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="all">전체</button>
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="액션">액션</button>
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="로맨스">로맨스</button>
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="개그">개그</button>
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="판타지">판타지</button>
+                    <button class="genre-btn px-4 py-2 rounded-full font-semibold bg-gray-200 hover:bg-[#e4a15f] hover:text-white transition-colors" data-genre="공포">공포</button>
+                </div>
+                <div id="filtered-comics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 필터링된 만화가 여기에 동적으로 삽입됩니다. -->
+                </div>
+            </section>
+            
+            <!-- Favorites Section -->
+            <section id="favorites-section" class="section hidden">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-[#4a4a4a]">즐겨찾는 만화 ⭐</h2>
+                <div id="favorites-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 즐겨찾기 만화가 여기에 동적으로 삽입됩니다. -->
+                </div>
+                <div id="no-favorites-message" class="text-center text-lg text-gray-500 hidden mt-8">아직 즐겨찾기에 추가된 만화가 없습니다.</div>
+            </section>
+
+            <!-- Menu Section -->
+            <section id="menu-section" class="section hidden">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-[#4a4a4a]">카페 메뉴판 ☕🍰</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-4">음료</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="아메리카노" data-price="4,500">아메리카노</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="카페 라떼" data-price="5,000">카페 라떼</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="캐모마일 티" data-price="4,000">캐모마일 티</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="초코 스무디" data-price="6,000">초코 스무디</button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-4">디저트</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="치즈 케이크" data-price="7,000">치즈 케이크</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="딸기 크로플" data-price="6,500">딸기 크로플</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="마카롱" data-price="2,500">마카롱</button>
+                            <button class="menu-item bg-gray-100 rounded-xl p-4 text-center hover:bg-[#f8e5c8] transition-colors" data-item="브라우니" data-price="5,500">브라우니</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Comic Detail Modal -->
+        <div id="comic-modal" class="book-modal fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 md:p-8 hidden z-50">
+            <div class="relative bg-white p-6 rounded-2xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col md:flex-row">
+                <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors z-50">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+                <div id="modal-content" class="w-full flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
+                    <!-- 모달 내용이 여기에 동적으로 삽입됩니다. -->
+                </div>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <button id="prev-page" class="bg-[#e4a15f] text-white px-4 py-2 rounded-full font-bold hover:bg-[#d88f4b] transition-colors shadow-sm disabled:bg-gray-400">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="next-page" class="bg-[#e4a15f] text-white px-4 py-2 rounded-full font-bold hover:bg-[#d88f4b] transition-colors shadow-sm disabled:bg-gray-400">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Message Box -->
+        <div id="message-box" class="fixed inset-0 flex justify-center items-center p-4 z-[100] hidden">
+            <div class="bg-white p-6 rounded-xl shadow-2xl text-center">
+                <p id="message-text" class="text-xl font-semibold mb-4"></p>
+                <button id="close-message-box" class="bg-[#e4a15f] text-white px-4 py-2 rounded-lg font-bold">확인</button>
+            </div>
+        </div>
+
+        <!-- Payment Modal (Improved) -->
+        <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 md:p-8 hidden z-[100]">
+            <div class="modal-content bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center transform transition-transform duration-300 scale-95 opacity-0">
+                <h3 class="text-2xl font-bold text-[#4a4a4a] mb-4">결제하기 💳</h3>
+                <p id="payment-item" class="text-lg font-semibold text-gray-700 mb-2"></p>
+                <p id="payment-price" class="text-3xl font-bold text-[#e4a15f] mb-6"></p>
+                <div class="flex space-x-4">
+                    <button id="confirm-payment-btn" class="flex-1 py-3 px-6 rounded-xl font-bold text-white bg-[#e4a15f] hover:bg-[#d88f4b] transition-colors shadow-md">
+                        결제하기
+                    </button>
+                    <button id="cancel-payment-btn" class="flex-1 py-3 px-6 rounded-xl font-bold text-gray-800 bg-gray-200 hover:bg-gray-300 transition-colors shadow-md">
+                        취소
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- JavaScript for all functionality -->
+    <script>
+        const comics = [
+            { id: 1, title: "별의 아이", genre: "SF, 모험", description: "아무도 가본 적 없는 우주를 탐험하는 소년의 이야기입니다. 신비로운 우주의 경이로움을 만나보세요.", cover: "https://placehold.co/400x550/e8d5b1/5e4d41?text=별의+아이", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=별의+아이+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=별의+아이+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=별의+아이+3", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=별의+아이+4", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=별의+아이+5"] },
+            { id: 2, title: "도시의 그림자", genre: "느와르, 스릴러, 액션", description: "어두운 도시 속에서 진실을 쫓는 형사의 이야기입니다. 긴장감 넘치는 추격전과 심리 스릴러를 즐겨보세요.", cover: "https://placehold.co/400x550/c7b29a/4a4a4a?text=도시의+그림자", pages: ["https://placehold.co/800x1200/e7d7c6/4a4a4a?text=도시의+그림자+1", "https://placehold.co/800x1200/e7d7c6/4a4a4a?text=도시의+그림자+2", "https://placehold.co/800x1200/e7d7c6/4a4a4a?text=도시의+그림자+3"] },
+            { id: 3, title: "마법의 숲", genre: "판타지, 로맨스", description: "마법으로 가득한 신비로운 숲에서 펼쳐지는 모험과 사랑 이야기. 아름다운 배경과 가슴 설레는 로맨스가 어우러집니다.", cover: "https://placehold.co/400x550/f5d5e5/7e5f8a?text=마법의+숲", pages: ["https://placehold.co/800x1200/f8e5c8/a18a7a?text=마법의+숲+1", "https://placehold.co/800x1200/f8e5c8/a18a7a?text=마법의+숲+2", "https://placehold.co/800x1200/f8e5c8/a18a7a?text=마법의+숲+3"] },
+            { id: 4, title: "시간여행자의 일기", genre: "SF, 드라마", description: "과거와 미래를 오가며 역사를 바꾸는 시간여행자의 이야기. 예상치 못한 반전과 감동이 가득합니다.", cover: "https://placehold.co/400x550/a8c3d9/425a6f?text=시간여행자의+일기", pages: ["https://placehold.co/800x1200/f8e5c8/425a6f?text=시간여행자의+일기+1", "https://placehold.co/800x1200/f8e5c8/425a6f?text=시간여행자의+일기+2", "https://placehold.co/800x1200/f8e5c8/425a6f?text=시간여행자의+일기+3"] },
+            { id: 5, title: "은하철도 999", genre: "SF, 모험, 판타지", description: "태고적부터 이어진 전설적인 만화, 은하철도 999의 모험 이야기. 소년 철이가 메텔과 함께 떠나는 우주 여행을 함께하세요.", cover: "https://placehold.co/400x550/5e4d41/e8d5b1?text=은하철도+999", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=은하철도+999+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=은하철도+999+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=은하철도+999+3"] },
+            { id: 6, title: "드래곤볼", genre: "액션, 모험, 개그", description: "소년 손오공의 모험과 성장, 그리고 드래곤볼을 찾는 이야기. 흥미진진한 전투와 유쾌한 개그가 공존합니다.", cover: "https://placehold.co/400x550/d2c18d/4a4a4a?text=드래곤볼", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=드래곤볼+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=드래곤볼+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=드래곤볼+3"] },
+            { id: 7, title: "슬램덩크", genre: "스포츠, 학원, 개그", description: "농구를 통해 성장하는 소년들의 이야기를 그린 전설적인 스포츠 만화. 뜨거운 우정과 감동을 느껴보세요.", cover: "https://placehold.co/400x550/a18a7a/f8e5c8?text=슬램덩크", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=슬램덩크+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=슬램덩크+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=슬램덩크+3"] },
+            { id: 8, title: "원피스", genre: "모험, 판타지, 개그", description: "해적왕을 꿈꾸는 루피와 그의 동료들의 대해적 시대 모험 이야기. 위대한 보물 '원피스'를 찾기 위한 여정입니다.", cover: "https://placehold.co/400x550/e4a15f/ffffff?text=원피스", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=원피스+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=원피스+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=원피스+3"] },
+            { id: 9, title: "기기괴괴", genre: "공포, 스릴러", description: "일상 속 기이하고 괴상한 이야기들을 옴니버스 형식으로 담았습니다. 섬뜩한 공포를 좋아하는 분들에게 추천합니다.", cover: "https://placehold.co/400x550/8a8a8a/ffffff?text=기기괴괴", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=기기괴괴+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=기기괴괴+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=기기괴괴+3"] },
+            { id: 10, title: "치즈인더트랩", genre: "로맨스, 드라마", description: "평범한 대학생 홍설과 미스터리한 선배 유정의 로맨스를 다룬 이야기. 복잡 미묘한 감정선을 따라가보세요.", cover: "https://placehold.co/400x550/a18a7a/f8e5c8?text=치즈인더트랩", pages: ["https://placehold.co/800x1200/f8e5c8/5e4d41?text=치즈인더트랩+1", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=치즈인더트랩+2", "https://placehold.co/800x1200/f8e5c8/5e4d41?text=치즈인더트랩+3"] },
+        ];
+
+        let currentPage = 0;
+        let currentComicId = null;
+        let currentComicPages = [];
+
+        // 로컬 스토리지에서 데이터 불러오기
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || {};
+        let ratings = JSON.parse(localStorage.getItem('ratings')) || {};
+        let comments = JSON.parse(localStorage.getItem('comments')) || {};
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+        let isMusicPlaying = localStorage.getItem('musicPlaying') === 'true';
+
+        // 요소 선택자
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const searchInput = document.getElementById('search-input');
+        const searchResultsContainer = document.getElementById('search-results');
+        const filteredComicsContainer = document.getElementById('filtered-comics');
+        const noResultsMessage = document.getElementById('no-results-message');
+        const favoritesList = document.getElementById('favorites-list');
+        const comicModal = document.getElementById('comic-modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalButton = document.getElementById('close-modal');
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        const musicToggleBtn = document.getElementById('music-toggle-btn');
+        const darkModeToggleBtn = document.getElementById('dark-mode-toggle-btn');
+        const genreButtons = document.querySelectorAll('.genre-btn');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const closeMessageBox = document.getElementById('close-message-box');
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentModalContent = paymentModal.querySelector('.modal-content');
+        const paymentItem = document.getElementById('payment-item');
+        const paymentPrice = document.getElementById('payment-price');
+        const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
+        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+
+        // 음악 설정
+        const cafeMusic = new Audio('https://www.chosic.com/wp-content/uploads/2021/04/calm-days.mp3'); // 예시 음악
+        cafeMusic.loop = true;
+
+        // 초기 UI 상태 설정
+        function initializeUI() {
+            if (isDarkMode) {
+                document.body.classList.add('dark');
+                darkModeToggleBtn.querySelector('i').className = 'fas fa-sun';
+            }
+            if (isMusicPlaying) {
+                cafeMusic.play().catch(e => console.error("Failed to autoplay music:", e));
+                musicToggleBtn.querySelector('i').className = 'fas fa-volume-up';
+            } else {
+                musicToggleBtn.querySelector('i').className = 'fas fa-volume-off';
+            }
+        }
+
+        // 사용자 정의 메시지 박스 표시
+        function showMessage(text) {
+            messageText.textContent = text;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // 만화 카드 렌더링
+        function renderComics(comicArray, container) {
+            container.innerHTML = '';
+            if (comicArray.length === 0) {
+                if (container === searchResultsContainer) {
+                    noResultsMessage.classList.remove('hidden');
+                } else {
+                    container.innerHTML = `<div class="text-center text-lg text-gray-500 col-span-full">만화가 없습니다.</div>`;
+                }
+                return;
+            }
+            noResultsMessage.classList.add('hidden');
+
+            comicArray.forEach(comic => {
+                const isFavorite = favorites.includes(comic.id);
+                const favoriteIcon = isFavorite ? 'fa-solid fa-star text-yellow-400' : 'fa-regular fa-star text-gray-400';
+                const comicRating = ratings[comic.id] || { score: 0, count: 0 };
+                const averageRating = comicRating.count > 0 ? (comicRating.score / comicRating.count).toFixed(1) : '0.0';
+
+                const card = document.createElement('div');
+                card.className = 'comic-card bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer';
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${comic.cover}" alt="${comic.title} 표지" class="comic-card-image">
+                        <button class="favorite-btn absolute top-2 right-2 p-2 bg-white bg-opacity-70 rounded-full shadow-md hover:bg-opacity-100 transition-colors" data-id="${comic.id}">
+                            <i class="${favoriteIcon}"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold truncate">${comic.title}</h3>
+                        <p class="text-sm text-gray-500 mb-2">${comic.genre}</p>
+                        <div class="flex items-center text-sm text-yellow-500 mb-2">
+                            <i class="fas fa-star mr-1"></i>
+                            <span>${averageRating}</span>
+                            <span class="text-gray-400 ml-2">(${comicRating.count}명)</span>
+                        </div>
+                        <p class="text-xs text-gray-600 line-clamp-3">${comic.description}</p>
+                    </div>
+                `;
+                card.querySelector('.comic-card-image').addEventListener('click', () => openComicModal(comic));
+                card.querySelector('.favorite-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(comic.id, e.currentTarget);
+                });
+                container.appendChild(card);
+            });
+        }
+
+        // 홈 페이지 - 오늘의 추천 만화 렌더링
+        function renderRecommended() {
+            const shuffled = [...comics].sort(() => 0.5 - Math.random());
+            const recommended = shuffled.slice(0, 3);
+            renderComics(recommended, document.getElementById('recommended-comics'));
+        }
+
+        // 검색 기능
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredComics = comics.filter(comic => comic.title.toLowerCase().includes(searchTerm) || comic.genre.toLowerCase().includes(searchTerm));
+            renderComics(filteredComics, searchResultsContainer);
+        });
+
+        // 장르 필터 기능
+        genreButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const genre = e.target.dataset.genre;
+                let filtered = comics;
+                if (genre !== 'all') {
+                    filtered = comics.filter(comic => comic.genre.includes(genre));
+                }
+                renderComics(filtered, filteredComicsContainer);
+            });
+        });
+
+        // 즐겨찾기 토글
+        function toggleFavorite(id, button) {
+            const index = favorites.indexOf(id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                button.querySelector('i').className = 'fa-regular fa-star text-gray-400';
+            } else {
+                favorites.push(id);
+                button.querySelector('i').className = 'fa-solid fa-star text-yellow-400';
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            showMessage(`즐겨찾기에 ${index > -1 ? '제거' : '추가'}되었습니다.`);
+        }
+
+        // 즐겨찾기 목록 렌더링
+        function renderFavorites() {
+            const favoriteComics = comics.filter(comic => favorites.includes(comic.id));
+            renderComics(favoriteComics, favoritesList);
+            if (favoriteComics.length === 0) {
+                document.getElementById('no-favorites-message').classList.remove('hidden');
+            } else {
+                document.getElementById('no-favorites-message').classList.add('hidden');
+            }
+        }
+
+        // 모달 열기
+        function openComicModal(comic) {
+            currentComicId = comic.id;
+            currentComicPages = comic.pages;
+            
+            currentPage = history[currentComicId] || 0;
+            
+            renderModalContent(comic);
+            renderPage();
+            comicModal.classList.remove('hidden');
+        }
+
+        // 모달 닫기
+        closeModalButton.addEventListener('click', () => {
+            history[currentComicId] = currentPage;
+            localStorage.setItem('history', JSON.stringify(history));
+            comicModal.classList.add('hidden');
+        });
+
+        // 모달 내용 렌더링
+        function renderModalContent(comic) {
+            modalContent.innerHTML = `
+                <div class="md:w-1/3 flex flex-col items-center p-4">
+                    <img src="${comic.cover}" alt="${comic.title} 표지" class="rounded-xl shadow-lg w-full max-w-[200px] md:max-w-none mb-4">
+                    <h3 class="text-xl font-bold mb-2">${comic.title}</h3>
+                    <p class="text-sm text-gray-500 mb-4">${comic.genre}</p>
+                    <p class="text-xs md:text-sm text-gray-600 mb-4 text-center">${comic.description}</p>
+                    
+                    <!-- 별점 섹션 -->
+                    <div class="w-full text-center mb-4">
+                        <h4 class="font-semibold mb-2">이 만화에 별점 주기 ⭐</h4>
+                        <div id="rating-stars" class="rating-stars flex justify-center space-x-1">
+                            ${[1,2,3,4,5].map(i => `<i class="fa-star cursor-pointer text-xl" data-value="${i}"></i>`).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 댓글 섹션 -->
+                    <div class="w-full">
+                        <h4 class="font-semibold mb-2">댓글 남기기 💬</h4>
+                        <div id="comments-list" class="space-y-2 mb-4 max-h-[150px] overflow-y-auto"></div>
+                        <textarea id="comment-input" rows="2" placeholder="댓글을 남겨주세요..." class="w-full p-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#e4a15f]"></textarea>
+                        <button id="add-comment-btn" class="w-full bg-[#e4a15f] text-white py-2 rounded-lg font-bold hover:bg-[#d88f4b] transition-colors">댓글 등록</button>
+                    </div>
+                </div>
+                <div id="comic-page-view" class="md:w-2/3 flex flex-1"></div>
+            `;
+
+            const ratingStars = document.getElementById('rating-stars');
+            ratingStars.addEventListener('click', (e) => {
+                if (e.target.classList.contains('fa-star')) {
+                    const score = parseInt(e.target.dataset.value);
+                    saveRating(currentComicId, score);
+                    renderRatingStars(ratingStars, score);
+                }
+            });
+            renderRatingStars(ratingStars, ratings[currentComicId]?.userScore || 0);
+
+            const commentsList = document.getElementById('comments-list');
+            const commentInput = document.getElementById('comment-input');
+            const addCommentBtn = document.getElementById('add-comment-btn');
+
+            addCommentBtn.addEventListener('click', () => {
+                const text = commentInput.value.trim();
+                if (text) {
+                    addComment(currentComicId, text);
+                    commentInput.value = '';
+                    renderComments(currentComicId);
+                }
+            });
+
+            renderComments(currentComicId);
+        }
+
+        // 별점 렌더링
+        function renderRatingStars(container, userScore) {
+            const stars = container.querySelectorAll('.fa-star');
+            stars.forEach(star => {
+                const value = parseInt(star.dataset.value);
+                if (value <= userScore) {
+                    star.classList.add('filled');
+                } else {
+                    star.classList.remove('filled');
+                }
+            });
+        }
+
+        // 별점 저장
+        function saveRating(id, score) {
+            if (!ratings[id]) {
+                ratings[id] = { score: 0, count: 0, userScore: 0 };
+            }
+            const currentRating = ratings[id];
+            
+            if (currentRating.userScore !== 0) {
+                currentRating.score -= currentRating.userScore;
+                currentRating.count -= 1;
+            }
+            
+            currentRating.score += score;
+            currentRating.count += 1;
+            currentRating.userScore = score;
+
+            localStorage.setItem('ratings', JSON.stringify(ratings));
+            showMessage(`별점 ${score}점을 남겨주셨습니다!`);
+        }
+
+        // 댓글 렌더링
+        function renderComments(id) {
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = '';
+            const comicComments = comments[id] || [];
+
+            if (comicComments.length === 0) {
+                commentsList.innerHTML = `<p class="text-sm text-gray-400 text-center">아직 댓글이 없습니다.</p>`;
+            }
+
+            comicComments.forEach((comment, index) => {
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-lg';
+                commentDiv.innerHTML = `
+                    <p class="text-sm">${comment}</p>
+                    <button class="delete-comment-btn text-xs text-gray-500 hover:text-red-500 transition-colors" data-index="${index}">삭제</button>
+                `;
+                commentsList.appendChild(commentDiv);
+            });
+
+            document.querySelectorAll('.delete-comment-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    deleteComment(id, index);
+                    renderComments(id);
+                });
+            });
+        }
+
+        // 댓글 추가
+        function addComment(id, text) {
+            if (!comments[id]) {
+                comments[id] = [];
+            }
+            comments[id].push(text);
+            localStorage.setItem('comments', JSON.stringify(comments));
+            showMessage("댓글이 등록되었습니다.");
+        }
+
+        // 댓글 삭제
+        function deleteComment(id, index) {
+            if (comments[id] && comments[id].length > index) {
+                comments[id].splice(index, 1);
+                localStorage.setItem('comments', JSON.stringify(comments));
+                showMessage("댓글이 삭제되었습니다.");
+            }
+        }
+
+        // 만화 페이지 렌더링
+        function renderPage() {
+            const pageView = document.getElementById('comic-page-view');
+            pageView.innerHTML = '';
+            
+            const pageImage = document.createElement('img');
+            pageImage.className = 'page-image rounded-lg shadow-md';
+            pageImage.src = currentComicPages[currentPage];
+
+            const pageNumber = document.createElement('div');
+            pageNumber.className = 'absolute bottom-4 right-4 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-xs font-semibold';
+            pageNumber.innerText = `${currentPage + 1} / ${currentComicPages.length}`;
+            
+            pageView.appendChild(pageImage);
+            pageView.appendChild(pageNumber);
+            
+            prevPageButton.disabled = currentPage === 0;
+            nextPageButton.disabled = currentPage >= currentComicPages.length - 1;
+        }
+
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderPage();
+            }
+        });
+
+        nextPageButton.addEventListener('click', () => {
+            if (currentPage < currentComicPages.length - 1) {
+                currentPage++;
+                renderPage();
+            }
+        });
+
+        // 내비게이션 및 초기 렌더링
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = e.target.dataset.section;
+                sections.forEach(sec => sec.classList.add('hidden'));
+                const targetSection = document.getElementById(`${sectionId}-section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                if (sectionId === 'search') {
+                    renderComics(comics, searchResultsContainer);
+                } else if (sectionId === 'favorites') {
+                    renderFavorites();
+                } else if (sectionId === 'recommendations') {
+                    renderComics(comics, filteredComicsContainer);
+                } else if (sectionId === 'home') {
+                    renderRecommended();
+                }
+            });
+        });
+
+        // 음악 및 다크 모드 토글
+        musicToggleBtn.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                cafeMusic.pause();
+                musicToggleBtn.querySelector('i').className = 'fas fa-volume-off';
+                isMusicPlaying = false;
+                showMessage("음악이 꺼졌습니다.");
+            } else {
+                cafeMusic.play().catch(e => console.error("Failed to play music:", e));
+                musicToggleBtn.querySelector('i').className = 'fas fa-volume-up';
+                isMusicPlaying = true;
+                showMessage("음악이 재생됩니다.");
+            }
+            localStorage.setItem('musicPlaying', isMusicPlaying);
+        });
+
+        darkModeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            isDarkMode = document.body.classList.contains('dark');
+            darkModeToggleBtn.querySelector('i').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('darkMode', isDarkMode);
+            showMessage(`다크모드가 ${isDarkMode ? '켜졌습니다' : '꺼졌습니다'}.`);
+        });
+
+        // 메뉴 아이템 클릭 -> 결제 모달 열기
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const itemName = e.target.dataset.item;
+                const itemPrice = e.target.dataset.price;
+                
+                paymentItem.textContent = `${itemName}을(를) 주문하시겠습니까?`;
+                paymentPrice.textContent = `${itemPrice} 원`;
+                paymentModal.classList.remove('hidden');
+                setTimeout(() => {
+                    paymentModalContent.classList.remove('scale-95', 'opacity-0');
+                    paymentModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            });
+        });
+
+        // 결제 모달 버튼 이벤트
+        confirmPaymentBtn.addEventListener('click', () => {
+            paymentModalContent.classList.remove('scale-100', 'opacity-100');
+            paymentModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                paymentModal.classList.add('hidden');
+            }, 300);
+            const orderedItem = paymentItem.textContent.replace('을(를) 주문하시겠습니까?', '');
+            showMessage(`${orderedItem} 주문이 완료되었습니다!`);
+        });
+
+        cancelPaymentBtn.addEventListener('click', () => {
+            paymentModalContent.classList.remove('scale-100', 'opacity-100');
+            paymentModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                paymentModal.classList.add('hidden');
+            }, 300);
+        });
+
+        closeMessageBox.addEventListener('click', () => {
+            messageBox.classList.add('hidden');
+        });
+
+        // 페이지 초기 로드
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUI();
+            renderRecommended();
+            renderComics(comics, filteredComicsContainer);
+        });
+    </script>
+</body>
+</html>

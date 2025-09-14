@@ -1,0 +1,117 @@
+/* Tailwind CSS는 HTML 파일에서 CDN으로 불러오므로, 이곳에는 커스텀 CSS만 작성합니다. */
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.comic-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.comic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.comic-card-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.3s ease-in-out;
+}
+
+.comic-card:hover .comic-card-image {
+    transform: scale(1.05);
+}
+
+.banner {
+    background-color: #f8e5c8;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.book-modal {
+    transition: all 0.3s ease-in-out;
+}
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #7d6b5e;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: transform 0.5s ease-in-out;
+    border-radius: 12px;
+    background-color: #fff;
+}
+
+.page-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Page animation classes */
+.slide-in-right { animation: slideInRight 0.5s forwards; }
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.slide-out-right { animation: slideOutRight 0.5s forwards; }
+@keyframes slideOutRight {
+    from { transform: translateX(0); }
+    to { transform: translateX(100%); }
+}
+
+.slide-in-left { animation: slideInLeft 0.5s forwards; }
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.slide-out-left { animation: slideOutLeft 0.5s forwards; }
+@keyframes slideOutLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+
+/* Star rating styles */
+.rating-stars .fa-star {
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.rating-stars .fa-star.filled {
+    color: #ffc107;
+}
+
+/* Dark mode styles are now in the HTML file for simpler JS toggle */

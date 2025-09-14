@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도서관 검색 앱</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://webfont.nanumsoft.com/nanum_square_ac/css/nanum_square_ac.css');
+        
+        body {
+            font-family: 'NanumSquareAc', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .search-input {
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.4);
+        }
+
+        .book-card {
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+            transform: scale(1);
+        }
+
+        .book-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .heart-btn {
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .heart-btn.active .heart-icon {
+            animation: heart-pop 0.3s cubic-bezier(0.2, 0, 0, 1) forwards;
+            color: #F43F5E;
+        }
+        .heart-icon {
+            color: #E5E7EB;
+        }
+
+        .toast-enter {
+            animation: toast-in 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .toast-leave {
+            animation: toast-out 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #A855F7;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes heart-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes toast-in {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes toast-out {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(100%); opacity: 0; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased min-h-screen">
+
+<!-- 메인 컨테이너 -->
+<div id="app" class="mx-auto p-4 sm:p-6 pb-20">
+
+    <!-- 헤더 및 검색창 -->
+    <header class="mb-6 sticky top-0 bg-gray-50 z-10 py-4 rounded-b-2xl">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">도서관 검색</h1>
+        <div class="relative">
+            <input type="text" id="searchInput" placeholder="책, 저자, 카테고리를 검색하세요..."
+                   class="search-input w-full p-4 pl-12 rounded-2xl bg-white border border-gray-200 text-gray-800 focus:outline-none focus:ring-4 focus:ring-purple-200">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        <div id="recentSearches" class="flex flex-wrap mt-2 -ml-2 transition-all duration-300 ease-in-out"></div>
+    </header>
+
+    <!-- 필터 및 정렬 -->
+    <div class="flex flex-wrap items-center justify-between mb-6">
+        <div class="flex flex-wrap gap-2 text-sm md:text-base">
+            <button data-filter="all" class="filter-btn px-4 py-2 rounded-full font-semibold text-white bg-purple-500 transition-colors">모두</button>
+            <button data-filter="computer" class="filter-btn px-4 py-2 rounded-full font-semibold text-gray-700 bg-gray-200 hover:bg-purple-200 transition-colors">IT</button>
+            <button data-filter="design" class="filter-btn px-4 py-2 rounded-full font-semibold text-gray-700 bg-gray-200 hover:bg-purple-200 transition-colors">디자인</button>
+            <button data-filter="business" class="filter-btn px-4 py-2 rounded-full font-semibold text-gray-700 bg-gray-200 hover:bg-purple-200 transition-colors">비즈니스</button>
+        </div>
+        <select id="sortSelect" class="mt-4 md:mt-0 p-2 rounded-xl border border-gray-300 text-gray-700 focus:ring-2 focus:ring-purple-200">
+            <option value="title">제목순</option>
+            <option value="author">저자순</option>
+            <option value="year">출판연도순</option>
+        </select>
+    </div>
+
+    <!-- 로딩 스피너 -->
+    <div id="loadingIndicator" class="hidden flex justify-center items-center py-8">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 책 목록 -->
+    <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 책 카드가 여기에 동적으로 추가됩니다 -->
+    </div>
+
+    <!-- 더보기 버튼 -->
+    <div class="flex justify-center mt-8">
+        <button id="loadMoreBtn" class="px-8 py-4 bg-purple-500 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">더보기</button>
+    </div>
+
+</div>
+
+<!-- 상세 모달 -->
+<div id="bookModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4 z-50 transition-opacity duration-300">
+    <div class="bg-white p-6 rounded-3xl w-full max-w-2xl transform transition-transform duration-300 scale-95 opacity-0" id="modalContent">
+        <div class="flex justify-end mb-4">
+            <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="flex flex-col md:flex-row gap-6">
+            <img id="modalCover" src="" alt="Book Cover" class="w-full md:w-1/3 rounded-xl object-cover shadow-md">
+            <div class="flex-1">
+                <h2 id="modalTitle" class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2"></h2>
+                <p id="modalAuthor" class="text-gray-600 font-semibold text-lg mb-2"></p>
+                <div class="flex items-center gap-2 mb-4">
+                    <span id="modalStatus" class="px-3 py-1 text-xs font-bold rounded-full"></span>
+                    <span id="modalCategory" class="px-3 py-1 text-xs font-bold rounded-full bg-purple-100 text-purple-700"></span>
+                    <span id="modalYear" class="px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-600"></span>
+                </div>
+                <p id="modalDescription" class="text-gray-700 leading-relaxed mb-6"></p>
+                <div class="flex gap-4 items-center">
+                    <button id="modalFavoriteBtn" class="p-3 bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 shadow-md">
+                        <svg class="w-7 h-7 heart-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    <button id="modalBorrowBtn" class="flex-1 px-6 py-3 bg-purple-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">대여하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 토스트 알림 -->
+<div id="toastContainer" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50"></div>
+
+<script>
+    const app = document.getElementById('app');
+    const searchInput = document.getElementById('searchInput');
+    const recentSearchesContainer = document.getElementById('recentSearches');
+    const bookListContainer = document.getElementById('bookList');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const sortSelect = document.getElementById('sortSelect');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+
+    const bookModal = document.getElementById('bookModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalCover = document.getElementById('modalCover');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalAuthor = document.getElementById('modalAuthor');
+    const modalStatus = document.getElementById('modalStatus');
+    const modalCategory = document.getElementById('modalCategory');
+    const modalYear = document.getElementById('modalYear');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalFavoriteBtn = document.getElementById('modalFavoriteBtn');
+    const modalBorrowBtn = document.getElementById('modalBorrowBtn');
+
+    const toastContainer = document.getElementById('toastContainer');
+
+    // --- API & 데이터 ---
+    const MOCK_BOOKS = [
+        { id: 1, title: '디자인 싱킹', author: '팀 브라운', category: 'design', year: 2013, status: 'available', coverImage: 'https://placehold.co/400x600/F43F5E/FFFFFF?text=Design', description: '창의적인 문제 해결을 위한 디자인 싱킹 방법론을 소개합니다.' },
+        { id: 2, title: '클린 코드', author: '로버트 C. 마틴', category: 'computer', year: 2008, status: 'loaned', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Clean+Code', description: '소프트웨어 개발자들이 반드시 알아야 할 깨끗한 코드 작성법을 다룹니다.' },
+        { id: 3, title: '팩트풀니스', author: '한스 로슬링', category: 'business', year: 2018, status: 'available', coverImage: 'https://placehold.co/400x600/4ECDC4/FFFFFF?text=Factfulness', description: '세상을 오해하는 10가지 이유와 올바른 통찰력을 제시합니다.' },
+        { id: 4, title: 'UX/UI 디자인 실무', author: '이경은', category: 'design', year: 2020, status: 'available', coverImage: 'https://placehold.co/400x600/F43F5E/FFFFFF?text=UI/UX', description: '실제 프로젝트를 통해 배우는 UX/UI 디자인의 핵심을 담았습니다.' },
+        { id: 5, title: '개발자의 글쓰기', author: '송경호', category: 'computer', year: 2022, status: 'loaned', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Developer+Writing', description: '개발자가 글쓰기를 통해 소통하고 성장하는 방법을 알려줍니다.' },
+        { id: 6, title: '그로스 해킹', author: '라이언 홀리데이', category: 'business', year: 2015, status: 'available', coverImage: 'https://placehold.co/400x600/4ECDC4/FFFFFF?text=Growth+Hacking', description: '데이터를 활용해 폭발적인 성장을 이끄는 마케팅 전략을 설명합니다.' },
+        { id: 7, title: '모던 자바스크립트 Deep Dive', author: '이웅모', category: 'computer', year: 2020, status: 'available', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=JS+Deep+Dive', description: '자바스크립트의 기본 개념부터 고급 기능까지 깊이 있게 파헤칩니다.' },
+        { id: 8, title: '스마트폰 디자인', author: '김민지', category: 'design', year: 2019, status: 'loaned', coverImage: 'https://placehold.co/400x600/F43F5E/FFFFFF?text=Smartphone+Design', description: '사용자 경험을 고려한 모바일 앱 디자인 원칙들을 소개합니다.' },
+        { id: 9, title: '자유론', author: '존 스튜어트 밀', category: 'philosophy', year: 1859, status: 'available', coverImage: 'https://placehold.co/400x600/667EEA/FFFFFF?text=On+Liberty', description: '개인의 자유와 사회적 통제의 관계를 논하는 고전입니다.' },
+        { id: 10, title: '리팩터링', author: '마틴 파울러', category: 'computer', year: 1999, status: 'available', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Refactoring', description: '기존 코드의 구조를 개선하는 방법과 중요성을 강조합니다.' },
+        { id: 11, title: '사피엔스', author: '유발 하라리', category: 'history', year: 2011, status: 'loaned', coverImage: 'https://placehold.co/400x600/6B46C1/FFFFFF?text=Sapiens', description: '인류의 역사를 거대하고 흥미로운 시각으로 풀어낸 책입니다.' },
+        { id: 12, title: '데이터 분석 입문', author: '박성현', category: 'computer', year: 2021, status: 'available', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Data+Analysis', description: '데이터를 이해하고 분석하는 기초적인 방법들을 알려줍니다.' },
+        { id: 13, title: '비즈니스 모델 젠더레이션', author: '알렉산더 오스터왈더', category: 'business', year: 2010, status: 'available', coverImage: 'https://placehold.co/400x600/4ECDC4/FFFFFF?text=Business+Model', description: '비즈니스 모델을 시각화하고 혁신하는 툴을 소개합니다.' },
+        { id: 14, title: '디자인의 디자인', author: '하라 켄야', category: 'design', year: 2007, status: 'available', coverImage: 'https://placehold.co/400x600/F43F5E/FFFFFF?text=Design+of+Design', description: '일본 디자인의 거장 하라 켄야의 디자인 철학을 담은 책입니다.' },
+        { id: 15, title: '파이썬 머신러닝', author: '안드레아스 뮐러', category: 'computer', year: 2016, status: 'loaned', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Python+ML', description: '파이썬을 이용한 머신러닝의 기초부터 실전까지 다룹니다.' },
+        { id: 16, title: '경영의 구루들', author: '피터 드러커', category: 'business', year: 2008, status: 'available', coverImage: 'https://placehold.co/400x600/4ECDC4/FFFFFF?text=Management+Gurus', description: '경영학의 거장들의 핵심 사상을 쉽게 풀어냅니다.' },
+        { id: 17, title: '프로그래머의 생각', author: '더그 스미스', category: 'computer', year: 2019, status: 'available', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Programmer+Mind', description: '프로그래머의 논리적 사고와 문제 해결 능력을 키워주는 책입니다.' },
+        { id: 18, title: '아이덴티티', author: '김민정', category: 'design', year: 2021, status: 'available', coverImage: 'https://placehold.co/400x600/F43F5E/FFFFFF?text=Identity', description: '브랜드 아이덴티티 구축 과정을 다양한 사례와 함께 설명합니다.' },
+        { id: 19, title: '딥러닝의 정석', author: '강인규', category: 'computer', year: 2023, status: 'loaned', coverImage: 'https://placehold.co/400x600/A855F7/FFFFFF?text=Deep+Learning', description: '딥러닝 모델의 이론과 실습을 체계적으로 안내합니다.' },
+        { id: 20, title: '기획자의 생각', author: '김상균', category: 'business', year: 2021, status: 'available', coverImage: 'https://placehold.co/400x600/4ECDC4/FFFFFF?text=Planner+Mind', description: '현업 기획자들의 사고방식과 노하우를 공유합니다.' },
+    ];
+    
+    // api.js 추상화
+    const api = {
+        fetchBooks: () => new Promise(resolve => setTimeout(() => resolve(MOCK_BOOKS), 500)),
+        updateBookStatus: (id, status) => new Promise(resolve => setTimeout(() => resolve({ id, status }), 200))
+    };
+
+    // --- 상태 관리 ---
+    let books = [];
+    let filteredBooks = [];
+    let currentPage = 1;
+    const itemsPerPage = 6;
+    let currentFilter = 'all';
+    let currentSort = 'title';
+    let currentQuery = '';
+    
+    const getFavorites = () => JSON.parse(localStorage.getItem('favorites') || '[]');
+    const setFavorites = (favorites) => localStorage.setItem('favorites', JSON.stringify(favorites));
+
+    const getRecentSearches = () => JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    const setRecentSearches = (searches) => localStorage.setItem('recentSearches', JSON.stringify(searches));
+
+    // --- 유틸리티 함수 ---
+    const debounce = (func, delay) => {
+        let timeoutId;
+        return (...args) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(null, args), delay);
+        };
+    };
+
+    const showToast = (message) => {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.className = 'toast-enter p-4 bg-gray-800 text-white rounded-xl shadow-lg mb-4 opacity-0 transition-all duration-300';
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove('opacity-0');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.add('opacity-0');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 3000);
+    };
+
+    // --- 렌더링 함수 ---
+    const renderBookCard = (book) => {
+        const isFavorite = getFavorites().includes(book.id);
+        const card = document.createElement('div');
+        card.className = `book-card bg-white rounded-3xl p-4 shadow-sm flex flex-col items-center text-center cursor-pointer relative`;
+        card.dataset.id = book.id;
+        
+        const statusColor = book.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        
+        card.innerHTML = `
+            <img src="${book.coverImage}" alt="${book.title} 표지" class="w-2/3 h-auto rounded-2xl mb-4 shadow-lg object-cover">
+            <h3 class="text-lg font-extrabold text-gray-900 mb-1">${book.title}</h3>
+            <p class="text-sm font-semibold text-gray-500 mb-2">${book.author}</p>
+            <div class="flex flex-wrap justify-center gap-2 mb-3">
+                <span class="px-3 py-1 text-xs font-bold rounded-full ${statusColor}">${book.status === 'available' ? '대여가능' : '대여중'}</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-600">${book.year}</span>
+            </div>
+            <button class="absolute top-4 right-4 p-2 bg-white rounded-full heart-btn ${isFavorite ? 'active' : ''}" data-id="${book.id}">
+                <svg class="w-6 h-6 heart-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        `;
+
+        card.addEventListener('click', () => openModal(book));
+        card.querySelector('.heart-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(book.id);
+            updateAllHeartIcons(book.id);
+        });
+
+        return card;
+    };
+
+    const renderBooks = () => {
+        bookListContainer.innerHTML = '';
+        const favorites = getFavorites();
+        
+        const booksToRender = filteredBooks
+            .slice(0, currentPage * itemsPerPage)
+            .sort((a, b) => {
+                if (currentSort === 'title') return a.title.localeCompare(b.title);
+                if (currentSort === 'author') return a.author.localeCompare(b.author);
+                if (currentSort === 'year') return b.year - a.year;
+                return 0;
+            });
+        
+        booksToRender.forEach(book => {
+            bookListContainer.appendChild(renderBookCard(book));
+        });
+
+        if (booksToRender.length < filteredBooks.length) {
+            loadMoreBtn.style.display = 'block';
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
+    };
+
+    const renderRecentSearches = () => {
+        const searches = getRecentSearches();
+        recentSearchesContainer.innerHTML = '';
+        if (searches.length > 0) {
+            searches.forEach(query => {
+                const tag = document.createElement('button');
+                tag.textContent = query;
+                tag.className = 'px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-xs font-semibold hover:bg-gray-300 transition-colors ml-2 mt-2';
+                tag.addEventListener('click', () => {
+                    searchInput.value = query;
+                    filterAndSearch();
+                });
+                recentSearchesContainer.appendChild(tag);
+            });
+        }
+    };
+
+    const showLoading = (show) => {
+        loadingIndicator.style.display = show ? 'flex' : 'none';
+        bookListContainer.style.display = show ? 'none' : 'grid';
+    };
+
+    // --- 인터랙션 로직 ---
+    const filterAndSearch = async () => {
+        const query = searchInput.value.toLowerCase();
+        
+        if (query) {
+            let searches = getRecentSearches();
+            searches = searches.filter(q => q !== query);
+            searches.unshift(query);
+            setRecentSearches(searches.slice(0, 5));
+            renderRecentSearches();
+        }
+
+        showLoading(true);
+        currentPage = 1;
+        
+        // 데이터 캐싱
+        if (books.length === 0) {
+            books = await api.fetchBooks();
+        }
+
+        filteredBooks = books.filter(book => {
+            const matchesQuery = book.title.toLowerCase().includes(query) ||
+                                 book.author.toLowerCase().includes(query) ||
+                                 book.description.toLowerCase().includes(query);
+            const matchesFilter = currentFilter === 'all' || book.category === currentFilter;
+            return matchesQuery && matchesFilter;
+        });
+        
+        showLoading(false);
+        renderBooks();
+    };
+
+    const debouncedFilterAndSearch = debounce(filterAndSearch, 300);
+
+    const toggleFavorite = (bookId) => {
+        let favorites = getFavorites();
+        const index = favorites.indexOf(bookId);
+        if (index > -1) {
+            favorites.splice(index, 1);
+            showToast('즐겨찾기에서 삭제되었습니다.');
+        } else {
+            favorites.push(bookId);
+            showToast('즐겨찾기에 추가되었습니다.');
+        }
+        setFavorites(favorites);
+    };
+    
+    const updateAllHeartIcons = (bookId) => {
+        const isFavorite = getFavorites().includes(bookId);
+        const heartButtons = document.querySelectorAll(`button[data-id="${bookId}"]`);
+        heartButtons.forEach(btn => {
+            btn.classList.toggle('active', isFavorite);
+            if (isFavorite) {
+                btn.querySelector('.heart-icon').style.color = '#F43F5E';
+            } else {
+                btn.querySelector('.heart-icon').style.color = '#E5E7EB';
+            }
+        });
+    };
+
+    const openModal = (book) => {
+        modalCover.src = book.coverImage;
+        modalTitle.textContent = book.title;
+        modalAuthor.textContent = book.author;
+        modalDescription.textContent = book.description;
+        modalYear.textContent = book.year;
+        modalCategory.textContent = book.category;
+        
+        const statusColor = book.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        modalStatus.textContent = book.status === 'available' ? '대여가능' : '대여중';
+        modalStatus.className = `px-3 py-1 text-xs font-bold rounded-full ${statusColor}`;
+
+        const isFavorite = getFavorites().includes(book.id);
+        modalFavoriteBtn.classList.toggle('active', isFavorite);
+        if (isFavorite) {
+            modalFavoriteBtn.querySelector('.heart-icon').style.color = '#F43F5E';
+        } else {
+            modalFavoriteBtn.querySelector('.heart-icon').style.color = '#E5E7EB';
+        }
+
+        modalFavoriteBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavorite(book.id);
+            updateAllHeartIcons(book.id);
+        };
+
+        modalBorrowBtn.onclick = () => {
+            if (book.status === 'available') {
+                showToast(`"${book.title}" 대여 요청이 완료되었습니다.`);
+                // api.updateBookStatus(book.id, 'loaned'); // 실제 API 호출 시
+            } else {
+                showToast(`"${book.title}"는 현재 대여중입니다.`);
+            }
+        };
+
+        bookModal.classList.remove('hidden');
+        setTimeout(() => {
+            bookModal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    };
+
+    const closeModal = () => {
+        modalContent.classList.add('scale-95', 'opacity-0');
+        bookModal.classList.add('opacity-0');
+        setTimeout(() => {
+            bookModal.classList.add('hidden');
+        }, 300);
+    };
+
+    // --- 이벤트 리스너 등록 ---
+    searchInput.addEventListener('input', () => {
+        currentPage = 1;
+        debouncedFilterAndSearch();
+    });
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            filterButtons.forEach(b => {
+                b.classList.remove('bg-purple-500', 'text-white');
+                b.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            e.target.classList.remove('bg-gray-200', 'text-gray-700');
+            e.target.classList.add('bg-purple-500', 'text-white');
+            currentFilter = e.target.dataset.filter;
+            filterAndSearch();
+        });
+    });
+
+    sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderBooks();
+    });
+
+    loadMoreBtn.addEventListener('click', () => {
+        currentPage++;
+        renderBooks();
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    bookModal.addEventListener('click', (e) => {
+        if (e.target === bookModal) {
+            closeModal();
+        }
+    });
+
+    // --- 초기화 ---
+    document.addEventListener('DOMContentLoaded', () => {
+        filterAndSearch();
+        renderRecentSearches();
+    });
+</script>
+
+</body>
+</html>

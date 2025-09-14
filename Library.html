@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도서관 책 검색 앱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #2F3136;
+            color: #DCDDDE;
+            line-height: 1.5;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        #right-panel {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #right-panel.active {
+            transform: translateX(0);
+        }
+
+        /* Basic icon styling for better visibility */
+        .icon {
+            fill: #DCDDDE;
+        }
+        .accent-icon {
+            fill: #5865F2;
+        }
+
+        /* Focus outline for accessibility */
+        :focus {
+            outline: 2px solid #5865F2;
+            outline-offset: 2px;
+        }
+
+        /* Custom alert message box */
+        #message-box {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="flex h-screen">
+
+    <!-- Left Sidebar (Category/History) -->
+    <aside id="sidebar" class="w-64 bg-[#202225] p-4 flex flex-col h-full overflow-y-auto scrollbar-hide border-r border-[#2C2E33] shadow-lg">
+        <h2 class="text-xl font-bold mb-4 text-[#DCDDDE]">탐색</h2>
+        
+        <!-- Recent Searches -->
+        <div class="mb-6">
+            <h3 class="text-xs text-gray-400 font-semibold mb-2">최근 검색</h3>
+            <ul id="recent-searches" class="space-y-1">
+                <!-- Recent search items will be rendered here -->
+            </ul>
+        </div>
+        
+        <!-- Categories/Filters -->
+        <div class="mb-6">
+            <h3 class="text-xs text-gray-400 font-semibold mb-2">카테고리</h3>
+            <ul id="category-filters" class="space-y-1 text-sm">
+                <li><button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200">모두</button></li>
+                <li><button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200">과학</button></li>
+                <li><button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200">기술</button></li>
+                <li><button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200">문학</button></li>
+                <li><button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200">역사</button></li>
+            </ul>
+        </div>
+
+        <!-- Favorites -->
+        <div class="flex-grow">
+            <h3 class="text-xs text-gray-400 font-semibold mb-2">즐겨찾기</h3>
+            <ul id="favorites-list" class="space-y-2 text-sm">
+                <!-- Favorite items will be rendered here -->
+            </ul>
+            <p id="no-favorites" class="text-xs text-gray-500 mt-2 hidden">아직 즐겨찾기가 없습니다.</p>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col p-6 overflow-y-auto scrollbar-hide">
+        <!-- Search, Filter, Sort -->
+        <header class="flex flex-col md:flex-row items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+            <div class="relative flex-grow w-full">
+                <input type="text" id="search-input" placeholder="책을 검색하세요 (키보드 /)" class="w-full bg-[#393D42] text-[#DCDDDE] rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#5865F2]">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8a4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+                <!-- Sort Dropdown -->
+                <div class="relative inline-block text-left">
+                    <button id="sort-button" class="inline-flex justify-center items-center w-full rounded-lg bg-[#393D42] py-2 px-4 text-sm font-medium text-[#DCDDDE] focus:outline-none focus:ring-2 focus:ring-[#5865F2]">
+                        정렬
+                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="sort-menu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-[#2F3136] ring-1 ring-black ring-opacity-5 focus:outline-none z-10 hidden">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="sort-button">
+                            <a href="#" class="sort-option text-[#DCDDDE] block px-4 py-2 text-sm hover:bg-[#40444B]" data-sort="title-asc">제목 (오름차순)</a>
+                            <a href="#" class="sort-option text-[#DCDDDE] block px-4 py-2 text-sm hover:bg-[#40444B]" data-sort="title-desc">제목 (내림차순)</a>
+                            <a href="#" class="sort-option text-[#DCDDDE] block px-4 py-2 text-sm hover:bg-[#40444B]" data-sort="author-asc">저자 (오름차순)</a>
+                            <a href="#" class="sort-option text-[#DCDDDE] block px-4 py-2 text-sm hover:bg-[#40444B]" data-sort="author-desc">저자 (내림차순)</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Results Grid -->
+        <div id="book-results" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 overflow-y-auto scrollbar-hide flex-grow">
+            <!-- Book cards will be rendered here -->
+            <p id="no-results" class="text-center col-span-full text-gray-500 mt-10 hidden">죄송합니다. 검색 결과가 없습니다. 다시 시도해 주세요.</p>
+        </div>
+        <div id="loading-indicator" class="text-center text-gray-400 mt-4 hidden">
+            로딩 중...
+        </div>
+    </main>
+
+    <!-- Right Panel (Book Details) -->
+    <aside id="right-panel" class="w-full md:w-96 bg-[#2B2D31] p-6 fixed right-0 top-0 h-full overflow-y-auto scrollbar-hide flex flex-col z-20">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-[#DCDDDE]">도서 정보</h2>
+            <button id="close-panel-btn" class="text-gray-400 hover:text-[#DCDDDE] transition-colors duration-200">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <div id="book-details-content" class="space-y-4 text-sm flex-grow">
+            <!-- Book details will be rendered here -->
+        </div>
+
+        <div class="mt-6 flex flex-col space-y-2">
+            <!-- Loan and Return Buttons -->
+            <button id="loan-btn" class="bg-[#5865F2] text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#4752C4] transition-colors duration-200 hidden">
+                대출하기
+            </button>
+            <button id="return-btn" class="bg-gray-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-600 transition-colors duration-200 hidden">
+                반납하기
+            </button>
+            <!-- Favorite Buttons -->
+            <button id="save-favorite-btn" class="bg-[#5865F2] text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#4752C4] transition-colors duration-200">
+                즐겨찾기 추가
+            </button>
+            <button id="remove-favorite-btn" class="bg-[#da3737] text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#b02e2e] transition-colors duration-200 hidden">
+                즐겨찾기에서 제거
+            </button>
+        </div>
+    </aside>
+
+    <!-- A simple message box instead of alert() -->
+    <div id="message-box" class="fixed p-4 rounded-lg shadow-xl text-center text-sm font-semibold hidden transition-all duration-300"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Mock Data ---
+            const mockBooks = [
+                {
+                    id: 1,
+                    title: "인공지능의 미래",
+                    author: "김지훈",
+                    publisher: "미래 출판사",
+                    year: 2023,
+                    category: "기술",
+                    description: "인공지능의 발전 방향과 윤리적 문제를 심도 있게 다룹니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=AI",
+                    details: "이 책은 AI 기술의 과거, 현재, 그리고 미래를 포괄적으로 탐구합니다. 머신러닝, 딥러닝, 자연어 처리와 같은 핵심 개념을 명확하게 설명하며, AI가 사회에 미치는 영향과 함께 직면하게 될 윤리적 도전 과제를 제시합니다."
+                },
+                {
+                    id: 2,
+                    title: "우주의 끝을 찾아서",
+                    author: "박서연",
+                    publisher: "과학 연구소",
+                    year: 2022,
+                    category: "과학",
+                    description: "우주론의 최신 연구와 미지의 영역을 탐험합니다.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/40444B/DCDDDE?text=Space",
+                    details: "이 책은 우주의 기원과 진화에 대한 최신 이론들을 소개합니다. 블랙홀, 암흑 물질, 암흑 에너지와 같은 난해한 주제들을 흥미로운 이야기로 풀어내어 독자들의 이해를 돕습니다. 우주의 신비를 사랑하는 모든 이들에게 필독서입니다."
+                },
+                {
+                    id: 3,
+                    title: "사피엔스: 인간의 역사",
+                    author: "유발 하라리",
+                    publisher: "김영사",
+                    year: 2011,
+                    category: "역사",
+                    description: "호모 사피엔스의 진화와 역사를 탐구하는 인류학적 고찰.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=Sapiens",
+                    details: "인류의 탄생부터 현대에 이르기까지, 인류의 역사를 거대하고 흥미로운 시각으로 조명합니다. 인지혁명, 농업혁명, 과학혁명을 통해 인간이 어떻게 지구의 지배자가 되었는지에 대한 놀라운 통찰을 제공합니다."
+                },
+                {
+                    id: 4,
+                    title: "컴퓨터 과학의 기초",
+                    author: "찰스 딕슨",
+                    publisher: "정보문화사",
+                    year: 2020,
+                    category: "기술",
+                    description: "컴퓨터 과학의 핵심 개념과 알고리즘을 쉽게 배울 수 있습니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=CS",
+                    details: "컴퓨터 과학 전공자를 위한 필수 교재입니다. 자료 구조, 알고리즘, 운영체제, 네트워크 등 컴퓨터 과학의 모든 기본을 체계적으로 다룹니다. 초보자도 쉽게 따라 할 수 있도록 풍부한 예제와 함께 설명합니다."
+                },
+                {
+                    id: 5,
+                    title: "사랑의 철학",
+                    author: "장 자크 루소",
+                    publisher: "문학과지성사",
+                    year: 1762,
+                    category: "문학",
+                    description: "루소의 철학적 사유를 통해 사랑의 본질을 탐색합니다.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/40444B/DCDDDE?text=Love",
+                    details: "사랑의 감정과 그 철학적 의미에 대해 깊이 고찰합니다. 인간 관계와 감정의 복잡성을 다양한 시각에서 분석하며, 독자들에게 사랑에 대한 새로운 이해를 선사합니다."
+                },
+                {
+                    id: 6,
+                    title: "화성 탐사: 새로운 지평",
+                    author: "제임스 켈리",
+                    publisher: "우주 과학",
+                    year: 2021,
+                    category: "과학",
+                    description: "최신 화성 탐사 임무와 미래 계획을 상세히 설명합니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=Mars",
+                    details: "화성 탐사의 역사와 현재 진행 중인 임무들을 자세히 소개합니다. 로버 '퍼서비어런스'의 활약과 함께, 인류의 화성 거주 가능성에 대한 과학적 분석과 미래 계획을 흥미롭게 풀어냅니다."
+                },
+                {
+                    id: 7,
+                    title: "자바스크립트 완벽 가이드",
+                    author: "데이비드 플래너건",
+                    publisher: "오라일리",
+                    year: 2020,
+                    category: "기술",
+                    description: "자바스크립트의 모든 것을 담은 바이블.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=JS",
+                    details: "프런트엔드 개발자라면 반드시 읽어야 할 책입니다. ES6 이후의 최신 문법부터 웹 브라우저 API, Node.js까지 자바스크립트의 깊이 있는 내용을 다룹니다. 실용적인 예제 코드가 풍부하여 학습에 큰 도움이 됩니다."
+                },
+                {
+                    id: 8,
+                    title: "세계사 대탐험",
+                    author: "존 스미스",
+                    publisher: "역사 여행",
+                    year: 2019,
+                    category: "역사",
+                    description: "고대 문명부터 현대사까지, 흥미로운 세계사 이야기.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=History",
+                    details: "흥미로운 사건과 인물들을 중심으로 세계사의 흐름을 짚어줍니다. 고대 이집트의 피라미드부터 2차 세계대전까지, 역사를 마치 이야기처럼 즐길 수 있도록 구성되었습니다."
+                },
+                {
+                    id: 9,
+                    title: "인공지능의 미래",
+                    author: "김지훈",
+                    publisher: "미래 출판사",
+                    year: 2023,
+                    category: "기술",
+                    description: "인공지능의 발전 방향과 윤리적 문제를 심도 있게 다룹니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=AI",
+                    details: "이 책은 AI 기술의 과거, 현재, 그리고 미래를 포괄적으로 탐구합니다. 머신러닝, 딥러닝, 자연어 처리와 같은 핵심 개념을 명확하게 설명하며, AI가 사회에 미치는 영향과 함께 직면하게 될 윤리적 도전 과제를 제시합니다."
+                },
+                {
+                    id: 10,
+                    title: "우주의 끝을 찾아서",
+                    author: "박서연",
+                    publisher: "과학 연구소",
+                    year: 2022,
+                    category: "과학",
+                    description: "우주론의 최신 연구와 미지의 영역을 탐험합니다.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/40444B/DCDDDE?text=Space",
+                    details: "이 책은 우주의 기원과 진화에 대한 최신 이론들을 소개합니다. 블랙홀, 암흑 물질, 암흑 에너지와 같은 난해한 주제들을 흥미로운 이야기로 풀어내어 독자들의 이해를 돕습니다. 우주의 신비를 사랑하는 모든 이들에게 필독서입니다."
+                },
+                {
+                    id: 11,
+                    title: "사피엔스: 인간의 역사",
+                    author: "유발 하라리",
+                    publisher: "김영사",
+                    year: 2011,
+                    category: "역사",
+                    description: "호모 사피엔스의 진화와 역사를 탐구하는 인류학적 고찰.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=Sapiens",
+                    details: "인류의 탄생부터 현대에 이르기까지, 인류의 역사를 거대하고 흥미로운 시각으로 조명합니다. 인지혁명, 농업혁명, 과학혁명을 통해 인간이 어떻게 지구의 지배자가 되었는지에 대한 놀라운 통찰을 제공합니다."
+                },
+                {
+                    id: 12,
+                    title: "컴퓨터 과학의 기초",
+                    author: "찰스 딕슨",
+                    publisher: "정보문화사",
+                    year: 2020,
+                    category: "기술",
+                    description: "컴퓨터 과학의 핵심 개념과 알고리즘을 쉽게 배울 수 있습니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=CS",
+                    details: "컴퓨터 과학 전공자를 위한 필수 교재입니다. 자료 구조, 알고리즘, 운영체제, 네트워크 등 컴퓨터 과학의 모든 기본을 체계적으로 다룹니다. 초보자도 쉽게 따라 할 수 있도록 풍부한 예제와 함께 설명합니다."
+                },
+                {
+                    id: 13,
+                    title: "사랑의 철학",
+                    author: "장 자크 루소",
+                    publisher: "문학과지성사",
+                    year: 1762,
+                    category: "문학",
+                    description: "루소의 철학적 사유를 통해 사랑의 본질을 탐색합니다.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/40444B/DCDDDE?text=Love",
+                    details: "사랑의 감정과 그 철학적 의미에 대해 깊이 고찰합니다. 인간 관계와 감정의 복잡성을 다양한 시각에서 분석하며, 독자들에게 사랑에 대한 새로운 이해를 선사합니다."
+                },
+                {
+                    id: 14,
+                    title: "화성 탐사: 새로운 지평",
+                    author: "제임스 켈리",
+                    publisher: "우주 과학",
+                    year: 2021,
+                    category: "과학",
+                    description: "최신 화성 탐사 임무와 미래 계획을 상세히 설명합니다.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=Mars",
+                    details: "화성 탐사의 역사와 현재 진행 중인 임무들을 자세히 소개합니다. 로버 '퍼서비어런스'의 활약과 함께, 인류의 화성 거주 가능성에 대한 과학적 분석과 미래 계획을 흥미롭게 풀어냅니다."
+                },
+                {
+                    id: 15,
+                    title: "자바스크립트 완벽 가이드",
+                    author: "데이비드 플래너건",
+                    publisher: "오라일리",
+                    year: 2020,
+                    category: "기술",
+                    description: "자바스크립트의 모든 것을 담은 바이블.",
+                    status: "대출 중",
+                    thumbnail: "https://placehold.co/100x150/5865F2/DCDDDE?text=JS",
+                    details: "프런트엔드 개발자라면 반드시 읽어야 할 책입니다. ES6 이후의 최신 문법부터 웹 브라우저 API, Node.js까지 자바스크립트의 깊이 있는 내용을 다룹니다. 실용적인 예제 코드가 풍부하여 학습에 큰 도움이 됩니다."
+                },
+                {
+                    id: 16,
+                    title: "세계사 대탐험",
+                    author: "존 스미스",
+                    publisher: "역사 여행",
+                    year: 2019,
+                    category: "역사",
+                    description: "고대 문명부터 현대사까지, 흥미로운 세계사 이야기.",
+                    status: "대출 가능",
+                    thumbnail: "https://placehold.co/100x150/99AAB5/2C2E33?text=History",
+                    details: "흥미로운 사건과 인물들을 중심으로 세계사의 흐름을 짚어줍니다. 고대 이집트의 피라미드부터 2차 세계대전까지, 역사를 마치 이야기처럼 즐길 수 있도록 구성되었습니다."
+                },
+                // Add more books for infinite scroll
+                ...Array(20).fill().map((_, i) => ({
+                    id: 17 + i,
+                    title: `더미 도서 ${i + 1}`,
+                    author: `더미 작가 ${i + 1}`,
+                    publisher: "더미 출판사",
+                    year: 2024,
+                    category: i % 3 === 0 ? "과학" : i % 3 === 1 ? "기술" : "문학",
+                    description: "더미 데이터입니다.",
+                    status: i % 2 === 0 ? "대출 가능" : "대출 중",
+                    thumbnail: `https://placehold.co/100x150/${Math.floor(Math.random()*16777215).toString(16)}/DCDDDE?text=Book${i+1}`,
+                    details: `이것은 ${i+1}번째 더미 도서의 상세 정보입니다.`
+                }))
+            ];
+
+            // --- State Management ---
+            let allBooks = [];
+            let displayedBooks = [];
+            let currentPage = 1;
+            const booksPerPage = 8;
+            let currentFilter = '모두';
+            let currentSort = 'title-asc';
+            let currentSearchTerm = '';
+
+            const recentSearches = new Set(JSON.parse(localStorage.getItem('recentSearches') || '[]'));
+            let favorites = new Set(JSON.parse(localStorage.getItem('favorites') || '[]'));
+
+            // --- DOM Elements ---
+            const searchInput = document.getElementById('search-input');
+            const bookResultsContainer = document.getElementById('book-results');
+            const noResultsMessage = document.getElementById('no-results');
+            const rightPanel = document.getElementById('right-panel');
+            const closePanelBtn = document.getElementById('close-panel-btn');
+            const bookDetailsContent = document.getElementById('book-details-content');
+            const saveFavoriteBtn = document.getElementById('save-favorite-btn');
+            const removeFavoriteBtn = document.getElementById('remove-favorite-btn');
+            const loanBtn = document.getElementById('loan-btn');
+            const returnBtn = document.getElementById('return-btn');
+            const sortButton = document.getElementById('sort-button');
+            const sortMenu = document.getElementById('sort-menu');
+            const sortOptions = document.querySelectorAll('.sort-option');
+            const categoryFilters = document.getElementById('category-filters');
+            const recentSearchesList = document.getElementById('recent-searches');
+            const favoritesList = document.getElementById('favorites-list');
+            const noFavoritesMessage = document.getElementById('no-favorites');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const messageBox = document.getElementById('message-box');
+
+            // --- API Simulation ---
+            const api = {
+                fetchBooks: () => {
+                    return new Promise(resolve => {
+                        setTimeout(() => resolve(mockBooks), 500); // Simulate network delay
+                    });
+                }
+            };
+
+            // --- Core Functions ---
+            const debounce = (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func(...args), delay);
+                };
+            };
+
+            // Show a simple, custom message box
+            const showMessage = (text, type = 'success') => {
+                messageBox.textContent = text;
+                messageBox.classList.remove('hidden', 'bg-red-500', 'bg-green-500');
+                if (type === 'error') {
+                    messageBox.classList.add('bg-red-500', 'text-white');
+                } else {
+                    messageBox.classList.add('bg-green-500', 'text-white');
+                }
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 2000);
+            };
+
+            const renderBookCard = (book) => {
+                const isFavorite = favorites.has(book.id.toString());
+                return `
+                    <div data-id="${book.id}" class="book-card bg-[#36393F] rounded-lg p-4 cursor-pointer hover:bg-[#40444B] transition-colors duration-200 shadow-md flex items-start">
+                        <img src="${book.thumbnail}" alt="${book.title} 표지" class="w-16 h-24 object-cover rounded mr-4 flex-shrink-0">
+                        <div class="flex-grow">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-semibold text-[#DCDDDE] text-lg truncate">${book.title}</h3>
+                                <svg data-id="${book.id}" class="favorite-icon w-5 h-5 ${isFavorite ? 'accent-icon' : 'icon'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5A5.5 5.5 0 017.5 3C9.33 3 11 4.29 12 5.51A5.5 5.5 0 0116.5 3C21 3 22 8.5 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">${book.author}</p>
+                            <p class="text-xs ${book.status === '대출 가능' ? 'text-green-400' : 'text-yellow-400'} font-medium mt-2">${book.status}</p>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const renderDetailsPanel = (book) => {
+                const isFavorite = favorites.has(book.id.toString());
+                saveFavoriteBtn.style.display = isFavorite ? 'none' : 'block';
+                removeFavoriteBtn.style.display = isFavorite ? 'block' : 'none';
+                
+                // Show/hide loan and return buttons based on book status
+                loanBtn.style.display = book.status === '대출 가능' ? 'block' : 'none';
+                returnBtn.style.display = book.status === '대출 중' ? 'block' : 'none';
+                
+                bookDetailsContent.innerHTML = `
+                    <div class="flex flex-col items-center text-center">
+                        <img src="${book.thumbnail}" alt="${book.title} 표지" class="w-32 h-48 object-cover rounded mb-4 shadow-lg">
+                        <h3 class="text-2xl font-bold">${book.title}</h3>
+                        <p class="text-gray-400 text-sm mt-1">${book.author}</p>
+                        <p class="text-xs text-gray-500 mt-1">${book.publisher}, ${book.year}</p>
+                        <p class="text-sm ${book.status === '대출 가능' ? 'text-green-400' : 'text-yellow-400'} font-medium mt-2">${book.status}</p>
+                    </div>
+                    <div class="border-t border-[#40444B] pt-4 mt-4">
+                        <h4 class="font-semibold text-[#DCDDDE]">상세 설명</h4>
+                        <p class="text-gray-300 mt-2 text-sm">${book.details}</p>
+                    </div>
+                `;
+                saveFavoriteBtn.dataset.bookId = book.id;
+                removeFavoriteBtn.dataset.bookId = book.id;
+                loanBtn.dataset.bookId = book.id;
+                returnBtn.dataset.bookId = book.id;
+            };
+
+            const renderBooks = (books) => {
+                if (books.length === 0) {
+                    noResultsMessage.classList.remove('hidden');
+                    return;
+                }
+                noResultsMessage.classList.add('hidden');
+                const html = books.map(renderBookCard).join('');
+                bookResultsContainer.innerHTML = html;
+            };
+
+            const renderFavorites = () => {
+                const favoriteBooks = allBooks.filter(book => favorites.has(book.id.toString()));
+                if (favoriteBooks.length === 0) {
+                    noFavoritesMessage.classList.remove('hidden');
+                    favoritesList.innerHTML = '';
+                    return;
+                }
+                noFavoritesMessage.classList.add('hidden');
+                favoritesList.innerHTML = favoriteBooks.map(book => `
+                    <li data-id="${book.id}" class="py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200 cursor-pointer">
+                        <span class="text-sm truncate block">${book.title}</span>
+                    </li>
+                `).join('');
+            };
+
+            const renderRecentSearches = () => {
+                const html = [...recentSearches].map(term => `
+                    <li>
+                        <button class="w-full text-left py-1 px-2 rounded-md hover:bg-[#393D42] transition-colors duration-200 text-sm truncate" data-term="${term}">
+                            ${term}
+                        </button>
+                    </li>
+                `).join('');
+                recentSearchesList.innerHTML = html;
+            };
+
+            const filterAndSortBooks = () => {
+                let filtered = allBooks.slice();
+
+                // Apply search term filter
+                const term = currentSearchTerm.toLowerCase();
+                if (term) {
+                    filtered = filtered.filter(book => 
+                        book.title.toLowerCase().includes(term) ||
+                        book.author.toLowerCase().includes(term)
+                    );
+                }
+
+                // Apply category filter
+                if (currentFilter !== '모두') {
+                    filtered = filtered.filter(book => book.category === currentFilter);
+                }
+
+                // Apply sorting
+                if (currentSort) {
+                    const [key, order] = currentSort.split('-');
+                    filtered.sort((a, b) => {
+                        const valA = a[key].toLowerCase();
+                        const valB = b[key].toLowerCase();
+                        if (valA < valB) return order === 'asc' ? -1 : 1;
+                        if (valA > valB) return order === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                }
+
+                return filtered;
+            };
+
+            const loadMoreBooks = () => {
+                const filteredAndSorted = filterAndSortBooks();
+                const start = (currentPage - 1) * booksPerPage;
+                const end = start + booksPerPage;
+                const newBooks = filteredAndSorted.slice(start, end);
+
+                if (newBooks.length === 0) {
+                    loadingIndicator.classList.add('hidden');
+                    return;
+                }
+                
+                newBooks.forEach(book => {
+                    const cardHtml = renderBookCard(book);
+                    bookResultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+
+                currentPage++;
+            };
+
+            const resetAndLoad = () => {
+                currentPage = 1;
+                bookResultsContainer.innerHTML = '';
+                loadMoreBooks();
+            };
+
+            // --- Event Listeners ---
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+                if (e.key === 'Escape') {
+                    rightPanel.classList.remove('active');
+                }
+            });
+
+            // Debounced search
+            const handleSearch = debounce(() => {
+                currentSearchTerm = searchInput.value;
+                if (currentSearchTerm && !recentSearches.has(currentSearchTerm)) {
+                    recentSearches.add(currentSearchTerm);
+                    localStorage.setItem('recentSearches', JSON.stringify([...recentSearches]));
+                    renderRecentSearches();
+                }
+                resetAndLoad();
+            }, 300);
+            searchInput.addEventListener('input', handleSearch);
+
+            // Infinite scroll
+            bookResultsContainer.addEventListener('scroll', () => {
+                if (bookResultsContainer.scrollTop + bookResultsContainer.clientHeight >= bookResultsContainer.scrollHeight - 100) {
+                    loadMoreBooks();
+                }
+            });
+
+            // Open/close detail panel
+            bookResultsContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.book-card');
+                if (card) {
+                    const bookId = card.dataset.id;
+                    const book = allBooks.find(b => b.id.toString() === bookId);
+                    if (book) {
+                        renderDetailsPanel(book);
+                        rightPanel.classList.add('active');
+                    }
+                }
+            });
+            
+            closePanelBtn.addEventListener('click', () => {
+                rightPanel.classList.remove('active');
+            });
+            
+            // Favorite toggle
+            bookResultsContainer.addEventListener('click', (e) => {
+                const icon = e.target.closest('.favorite-icon');
+                if (icon) {
+                    const bookId = icon.dataset.id;
+                    e.stopPropagation(); // Prevent card click event
+                    if (favorites.has(bookId)) {
+                        favorites.delete(bookId);
+                    } else {
+                        favorites.add(bookId);
+                    }
+                    localStorage.setItem('favorites', JSON.stringify([...favorites]));
+                    renderFavorites();
+                    resetAndLoad(); // Re-render to update icon
+                }
+            });
+
+            // Handle favorites from the detail panel
+            saveFavoriteBtn.addEventListener('click', () => {
+                const bookId = saveFavoriteBtn.dataset.bookId;
+                favorites.add(bookId);
+                localStorage.setItem('favorites', JSON.stringify([...favorites]));
+                renderFavorites();
+                resetAndLoad();
+                rightPanel.classList.remove('active');
+                showMessage('즐겨찾기에 추가되었습니다.');
+            });
+
+            removeFavoriteBtn.addEventListener('click', () => {
+                const bookId = removeFavoriteBtn.dataset.bookId;
+                favorites.delete(bookId);
+                localStorage.setItem('favorites', JSON.stringify([...favorites]));
+                renderFavorites();
+                resetAndLoad();
+                rightPanel.classList.remove('active');
+                showMessage('즐겨찾기에서 제거되었습니다.');
+            });
+
+            // Loan and Return functionality
+            loanBtn.addEventListener('click', (e) => {
+                const bookId = e.target.dataset.bookId;
+                const book = allBooks.find(b => b.id.toString() === bookId);
+                if (book && book.status === '대출 가능') {
+                    book.status = '대출 중';
+                    renderDetailsPanel(book);
+                    resetAndLoad();
+                    showMessage(`${book.title}이(가) 대출되었습니다.`);
+                }
+            });
+
+            returnBtn.addEventListener('click', (e) => {
+                const bookId = e.target.dataset.bookId;
+                const book = allBooks.find(b => b.id.toString() === bookId);
+                if (book && book.status === '대출 중') {
+                    book.status = '대출 가능';
+                    renderDetailsPanel(book);
+                    resetAndLoad();
+                    showMessage(`${book.title}이(가) 반납되었습니다.`);
+                }
+            });
+
+
+            // Sort menu toggle
+            sortButton.addEventListener('click', () => {
+                sortMenu.classList.toggle('hidden');
+            });
+
+            // Sort option selection
+            sortOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentSort = e.target.dataset.sort;
+                    sortMenu.classList.add('hidden');
+                    resetAndLoad();
+                });
+            });
+
+            // Category filter
+            categoryFilters.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (button) {
+                    currentFilter = button.textContent.trim();
+                    resetAndLoad();
+                }
+            });
+            
+            // Recent search term click
+            recentSearchesList.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (button) {
+                    const term = button.dataset.term;
+                    searchInput.value = term;
+                    currentSearchTerm = term;
+                    resetAndLoad();
+                }
+            });
+
+            // Initial load
+            const init = async () => {
+                loadingIndicator.classList.remove('hidden');
+                try {
+                    allBooks = await api.fetchBooks();
+                    resetAndLoad();
+                    renderFavorites();
+                    renderRecentSearches();
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            };
+            init();
+        });
+    </script>
+</body>
+</html>

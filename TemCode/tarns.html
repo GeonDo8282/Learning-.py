@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>자주 묻는 질문 - TemCode</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='0' y='52' font-size='52'%3E❓%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --blue: #3a7bfd;
+      --light-gray: #f9fbff;
+      --text-gray: #555;
+      --shadow: rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: #fff;
+      margin: 0;
+      padding: 0;
+      color: var(--text-gray);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--blue);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .search-box {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-box input {
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 2px 6px var(--shadow);
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+    .search-box input:focus {
+      border-color: var(--blue);
+      outline: none;
+      box-shadow: 0 0 6px var(--blue);
+    }
+
+    .faq-item {
+      background: var(--light-gray);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: box-shadow 0.2s ease;
+      cursor: default;
+    }
+
+    .faq-question {
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.1rem;
+      user-select: none;
+    }
+
+    .faq-answer {
+      margin-top: 0.5rem;
+      line-height: 1.5;
+      display: none;
+      font-size: 1rem;
+      color: #333;
+      white-space: pre-line;
+    }
+
+    .faq-item.active .faq-answer {
+      display: block;
+    }
+
+    .faq-item:hover {
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .arrow {
+      transition: transform 0.3s;
+      color: var(--blue);
+      font-weight: bold;
+      font-size: 1.25rem;
+      user-select: none;
+    }
+
+    .faq-item.active .arrow {
+      transform: rotate(180deg);
+    }
+
+    footer {
+      margin-top: 4rem;
+      background: #fafafa;
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #888;
+      border-top: 1px solid #eee;
+      user-select: none;
+    }
+
+    @media (max-width: 600px) {
+      .faq-question {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>자주 묻는 질문</h1>
+    <div class="search-box">
+      <input type="text" id="faq-search" placeholder="궁금한 내용을 검색해보세요" aria-label="FAQ 검색" />
+    </div>
+    <div id="faq-list" role="list" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <footer>
+    ⓒ 2025 TemCode | 이메일: kjhiuyfddst5432@gmail.com | 디스코드: tori_emon
+  </footer>
+
+  <script>
+    const faqs = [
+      { q: "서비스 신청은 어떻게 하나요?", a: "웹사이트 상단의 “지금 주문하기” 버튼을 통해 신청 가능합니다." },
+      { q: "제작 기간은 얼마나 걸리나요?", a: "기본형 기준으로 평균 3~5일 소요됩니다." },
+      { q: "디자인 수정은 몇 번까지 가능한가요?", a: "기본적으로 2회까지 무료 수정이 포함됩니다." },
+      { q: "디자인 시안은 언제 받아볼 수 있나요?", a: "신청 후 24시간 내에 1차 시안을 보내드립니다." },
+      { q: "모바일 최적화도 되나요?", a: "모든 플랜은 모바일 반응형 디자인이 기본 제공됩니다." },
+      { q: "결제는 어떻게 하나요?", a: "카드 결제, 간편결제, 가상계좌 등 다양한 방식이 지원됩니다." },
+      { q: "환불은 가능한가요?", a: "제작이 시작되기 전까지 전액 환불 가능합니다." },
+      { q: "직접 만든 디자인을 적용할 수 있나요?", a: "네, Figma/PSD 등으로 제공해 주시면 적용 가능합니다." },
+      { q: "한글 외 언어도 지원되나요?", a: "기본형 이상 플랜에서는 다국어가 지원됩니다." },
+      { q: "도메인 연결도 해주시나요?", a: "연결 방법 안내 또는 직접 연결(유료 옵션) 가능합니다." },
+      { q: "웹사이트 유지비가 있나요?", a: "유지비는 별도로 발생하지 않으며, 호스팅은 본인이 관리합니다." },
+      { q: "서버는 제공되나요?", a: "자체 서버는 제공하지 않으며, Netlify, Vercel 등을 추천드립니다." },
+      { q: "포트폴리오 사이트 제작도 가능한가요?", a: "네, 다양한 유형의 포트폴리오 템플릿이 준비되어 있습니다." },
+      { q: "로고 제작도 해주시나요?", a: "별도 옵션으로 로고 디자인도 지원 가능합니다." },
+      { q: "이메일 폼 연동이 되나요?", a: "고급형 플랜에서 이메일/디스코드 폼 연동이 가능합니다." },
+      { q: "검색엔진 최적화(SEO)는 되어 있나요?", a: "기본적인 SEO 구조를 제공합니다." },
+      { q: "사이트 수정은 어떻게 하나요?", a: "원하실 경우 수정 가이드를 함께 제공해드립니다." },
+      { q: "블로그 기능도 가능한가요?", a: "네, 블로그 형식의 구조로 제작 가능합니다." },
+      { q: "웹사이트 속도는 빠른가요?", a: "최적화된 정적 사이트 구조로 빠른 속도를 제공합니다." },
+      { q: "카페24, Wix랑 뭐가 다른가요?", a: "맞춤형 디자인과 가벼운 속도, 자유로운 구조가 차이점입니다." },
+      { q: "결제 시스템도 연동 가능한가요?", a: "외부 결제 링크 삽입은 가능하나 직접 연동은 불가합니다." },
+      { q: "브랜드 컬러 적용 가능한가요?", a: "고객님의 브랜드 가이드를 바탕으로 컬러를 설정해드립니다." },
+      { q: "폰트 변경 가능한가요?", a: "네, 원하시는 웹폰트를 적용해드립니다." },
+      { q: "호스팅은 어떤 걸 추천하시나요?", a: "Netlify, Vercel, Github Pages 등을 추천드립니다." },
+      { q: "고객센터는 어디에 연락하나요?", a: "이메일 또는 디스코드로 연락주시면 됩니다." },
+      { q: "웹사이트는 몇 페이지까지 되나요?", a: "기본형은 1~3페이지, 고급형은 최대 5페이지까지 포함됩니다." },
+      { q: "커스터마이징 범위는 어떻게 되나요?", a: "고급형 플랜에서 자유로운 커스터마이징이 가능합니다." },
+      { q: "이미지 제공도 해주시나요?", a: "기본적으로 무료 상업용 이미지를 활용합니다." },
+      { q: "사이트 배포까지 해주시나요?", a: "배포 방법 안내 + 설정 지원 가능합니다." },
+      { q: "소스코드도 받을 수 있나요?", a: "원하시면 HTML/CSS 소스를 함께 제공해드립니다." },
+      { q: "영수증 발급 가능한가요?", a: "네, 요청 시 세금계산서 또는 간이영수증 발급 가능합니다." },
+      { q: "영상 삽입 가능한가요?", a: "유튜브, 비메오 등 외부 영상 삽입이 가능합니다." },
+      { q: "음성 파일도 넣을 수 있나요?", a: "HTML5 오디오 플레이어로 삽입 가능합니다." },
+      { q: "SNS 연동도 되나요?", a: "인스타그램, 디스코드, 구글 등 아이콘/링크 삽입 가능합니다." },
+      { q: "디자인 트렌드는 반영되나요?", a: "최신 UI/UX 트렌드 기준으로 제작됩니다." },
+      { q: "웹 접근성도 고려되나요?", a: "기본적인 접근성 기준을 충족하도록 설계됩니다." },
+      { q: "아코디언 메뉴 넣을 수 있나요?", a: "FAQ 등에서 활용 가능합니다." },
+      { q: "구글 애널리틱스 연동 가능할까요?", a: "네, 추적 코드 삽입으로 가능하며 안내도 드립니다." },
+      { q: "GA4 기준도 지원되나요?", a: "네, GA4 ID 기준으로 연동 지원됩니다." },
+      { q: "챗봇도 넣을 수 있나요?", a: "외부 챗봇 서비스 삽입은 가능합니다." },
+      { q: "스케줄러 삽입 가능한가요?", a: "캘린들리 등 외부 도구 연동 가능합니다." },
+      { q: "템플릿은 몇 가지인가요?", a: "약 10종의 템플릿이 준비되어 있습니다." },
+      { q: "애니메이션 효과도 포함되나요?", a: "네, 스크롤 애니메이션 등이 기본 포함됩니다." },
+      { q: "스크립트 삽입 가능한가요?", a: "외부 JS 삽입 가능하며 구조에 따라 안내드립니다." },
+      { q: "구글 검색 노출도 되나요?", a: "robots.txt, sitemap.xml 설정 등도 도와드립니다." },
+      { q: "반응형 테스트는 어떻게 하나요?", a: "Chrome DevTools로 확인하거나 실제 기기로 테스트합니다." },
+      { q: "모바일 메뉴도 포함되나요?", a: "햄버거 메뉴 포함한 모바일 전용 UI가 구성됩니다." },
+      { q: "최종 파일은 어떻게 전달되나요?", a: "압축 파일 또는 GitHub Repo 형태로 전달됩니다." },
+      { q: "협업은 어떤 방식으로 하나요?", a: "메일, 디스코드, 피그마 코멘트 등으로 소통합니다." },
+      { q: "재주문 시 할인되나요?", a: "재구매 고객에겐 10% 할인 쿠폰이 제공됩니다." }
+    ];
+
+    const faqList = document.getElementById('faq-list');
+    const searchInput = document.getElementById('faq-search');
+
+    function createFaqItem(faq) {
+      const item = document.createElement('div');
+      item.className = 'faq-item';
+      item.tabIndex = 0;
+      item.setAttribute('role', 'listitem');
+
+      const question = document.createElement('div');
+      question.className = 'faq-question';
+      question.textContent = faq.q;
+
+      const arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      arrow.innerHTML = '▾';
+      question.appendChild(arrow);
+
+      const answer = document.createElement('div');
+      answer.className = 'faq-answer';
+      answer.textContent = faq.a;
+
+      question.addEventListener('click', () => {
+        item.classList.toggle('active');
+      });
+      question.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.classList.toggle('active');
+        }
+      });
+
+      item.appendChild(question);
+      item.appendChild(answer);
+      return item;
+    }
+
+    function renderFaqs(filter = '') {
+      faqList.innerHTML = '';
+      const filtered = faqs.filter(faq => 
+        faq.q.includes(filter) || faq.a.includes(filter)
+      );
+      if (filtered.length === 0) {
+        faqList.innerHTML = `<p>검색 결과가 없습니다.</p>`;
+        return;
+      }
+      filtered.forEach(faq => {
+        faqList.appendChild(createFaqItem(faq));
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      renderFaqs(e.target.value.trim());
+    });
+
+    // 초기 렌더링
+    renderFaqs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>템플릿 탐색 | TemCode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0; padding: 0; background: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      width: 90%; max-width: 1200px;
+      margin: 2rem auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      color: #0070f3;
+    }
+
+    /* 카테고리 필터 버튼 스타일 */
+    .category-filter {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .category-filter button {
+      background: #e1eaff;
+      border: none;
+      margin: 0 0.5rem;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #0070f3;
+      transition: background 0.3s, color 0.3s;
+    }
+    .category-filter button.active,
+    .category-filter button:hover {
+      background: #0070f3;
+      color: #fff;
+    }
+
+    /* 카드 그리드 */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 6px 18px rgb(0 0 0 / 0.15);
+    }
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-bottom: 1px solid #ddd;
+    }
+    .card-content {
+      padding: 1rem;
+      flex-grow: 1;
+    }
+    .card h3 {
+      margin: 0 0 0.5rem 0;
+      font-weight: 700;
+      color: #0070f3;
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* 모달 스타일 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+      position: relative;
+      padding: 1.5rem 2rem;
+      animation: fadeInScale 0.3s ease forwards;
+    }
+    @keyframes fadeInScale {
+      0% {opacity: 0; transform: scale(0.9);}
+      100% {opacity: 1; transform: scale(1);}
+    }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #777;
+      transition: color 0.3s;
+    }
+    .modal-close:hover {
+      color: #0070f3;
+    }
+    .modal img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .modal h2 {
+      margin-top: 0;
+      color: #0070f3;
+    }
+    .modal p {
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      color: #444;
+    }
+    .modal a.button-use {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      background: #0070f3;
+      color: white;
+      border-radius: 24px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .modal a.button-use:hover {
+      background: #005bb5;
+    }
+
+    /* 평점 별점 */
+    .rating {
+      color: #f5a623;
+      font-size: 1.1rem;
+      margin-bottom: 0.7rem;
+    }
+
+    /* AI 추천 섹션 */
+    .ai-quiz {
+      background: #0070f3;
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 3rem auto;
+      max-width: 600px;
+      text-align: center;
+    }
+    .ai-quiz h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    .ai-quiz button {
+      background: #fff;
+      color: #0070f3;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .ai-quiz button:hover {
+      background: #cce0ff;
+    }
+    .quiz-result {
+      margin-top: 1rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      min-height: 2rem;
+    }
+
+    /* 평점 & 리뷰 (간단한 예시) */
+    .reviews {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #555;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>템플릿 탐색 및 추천</h1>
+
+    <!-- 카테고리 필터 -->
+    <div class="category-filter">
+      <button data-category="all" class="active">전체보기</button>
+      <button data-category="blog">블로그</button>
+      <button data-category="portfolio">포트폴리오</button>
+      <button data-category="product">제품 소개</button>
+    </div>
+
+    <!-- 템플릿 카드 -->
+    <div class="cards" id="template-cards">
+      <!-- 카드 동적 생성됨 -->
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div class="modal-overlay" id="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal" role="document">
+        <button class="modal-close" aria-label="닫기">&times;</button>
+        <h2 id="modal-title"></h2>
+        <div id="modal-rating" class="rating"></div>
+        <img id="modal-image" src="" alt="템플릿 이미지" />
+        <p id="modal-description"></p>
+        <p><a href="#" id="modal-demo-link" target="_blank" rel="noopener" class="button-use">데모 보기</a></p>
+        <p><a href="#" id="modal-use-link" target="_blank" rel="noopener" class="button-use">바로 사용하기</a></p>
+        <div class="reviews" id="modal-reviews"></div>
+      </div>
+    </div>
+
+    <!-- AI 추천 섹션 -->
+    <div class="ai-quiz">
+      <h2>내 스타일에 맞는 템플릿 추천</h2>
+      <p>아래 버튼을 눌러 간단한 질문에 답해보세요!</p>
+      <button id="start-quiz-btn">퀴즈 시작하기</button>
+      <div class="quiz-result" id="quiz-result"></div>
+    </div>
+  </div>
+
+  <script>
+    const templates = [
+      {
+        id: 1,
+        category: 'blog',
+        title: '감성 블로그',
+        description: '따뜻하고 부드러운 디자인으로 개인 이야기, 여행, 일상을 아름답게 기록할 수 있습니다.',
+        image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80',
+        demoUrl: 'https://example.com/blog-demo',
+        useUrl: 'https://example.com/blog-start',
+        rating: 4.7,
+        reviews: '“따뜻한 분위기가 좋아요!” — 사용자 A<br>“사용하기 편리해요.” — 사용자 B'
+      },
+      {
+        id: 2,
+        category: 'portfolio',
+        title: '포트폴리오',
+        description: '개발자 및 디자이너를 위한 깔끔한 슬라이드 레이아웃 템플릿입니다.',
+        image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80',
+        demoUrl: 'https://example.com/portfolio-demo',
+        useUrl: 'https://example.com/portfolio-start',
+        rating: 4.9,
+        reviews: '“프로젝트를 멋지게 보여줄 수 있어요.” — 사용자 C<br>“디자인이 정말 세련됐어요.” — 사용자 D'
+      },
+      {
+        id: 3,
+        category: 'product',
+        title: '제품 소개',
+        description: '서비스 및 제품 홍보에 적합한 깔끔한 랜딩페이지 템플릿입니다.',
+        image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=600&q=80',
+        demoUrl: 'https://example.com/product-demo',
+        useUrl: 'https://example.com/product-start',
+        rating: 4.5,
+        reviews: '“제품 설명이 직관적이에요.” — 사용자 E<br>“고객 유입이 늘었어요.” — 사용자 F'
+      },
+      // 필요시 더 추가 가능
+    ];
+
+    // 카드 생성 함수
+    function createCard(template) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.category = template.category;
+      card.innerHTML = `
+        <img src="${template.image}" alt="${template.title} 이미지" />
+        <div class="card-content">
+          <h3>${template.title}</h3>
+          <p>${template.description}</p>
+        </div>
+      `;
+      // 카드 클릭 시 모달 열기
+      card.addEventListener('click', () => openModal(template));
+      return card;
+    }
+
+    // 카드 렌더링
+    function renderCards(filterCategory = 'all') {
+      const container = document.getElementById('template-cards');
+      container.innerHTML = '';
+      const filtered = filterCategory === 'all' ? templates : templates.filter(t => t.category === filterCategory);
+      filtered.forEach(template => {
+        container.appendChild(createCard(template));
+      });
+    }
+
+    // 모달 열기
+    function openModal(template) {
+      document.getElementById('modal-title').textContent = template.title;
+      document.getElementById('modal-description').textContent = template.description;
+      document.getElementById('modal-image').src = template.image;
+      document.getElementById('modal-image').alt = template.title + ' 이미지';
+      document.getElementById('modal-demo-link').href = template.demoUrl;
+      document.getElementById('modal-use-link').href = template.useUrl;
+      document.getElementById('modal-rating').innerHTML = `⭐ ${template.rating.toFixed(1)}`;
+      document.getElementById('modal-reviews').innerHTML = template.reviews;
+
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    // 모달 닫기
+    document.querySelector('.modal-close').addEventListener('click', () => {
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+    });
+    // 모달 바깥 클릭 시 닫기
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('active');
+        e.currentTarget.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    // 카테고리 버튼 클릭 이벤트
+    document.querySelectorAll('.category-filter button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-filter button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCards(btn.dataset.category);
+      });
+    });
+
+    // AI 추천 퀴즈 간단 구현 (예시)
+    const startQuizBtn = document.getElementById('start-quiz-btn');
+    const quizResult = document.getElementById('quiz-result');
+
+    startQuizBtn.addEventListener('click', () => {
+      const questions = [
+        {
+          question: "당신의 웹사이트 주제는 무엇인가요?",
+          options: ["블로그", "포트폴리오", "제품 소개"],
+        },
+        {
+          question: "원하는 디자인 스타일은?",
+          options: ["감성적", "모던하고 깔끔한", "직관적이고 강렬한"],
+        },
+      ];
+
+      let answers = [];
+      let currentQ = 0;
+
+      function showQuestion() {
+        if (currentQ >= questions.length) {
+          recommendTemplate();
+          return;
+        }
+        quizResult.innerHTML = `<p>${questions[currentQ].question}</p>`;
+        questions[currentQ].options.forEach(option => {
+          const btn = document.createElement('button');
+          btn.textContent = option;
+          btn.style.margin = '0.3rem';
+          btn.style.padding = '0.5rem 1rem';
+          btn.style.border = 'none';
+          btn.style.borderRadius = '16px';
+          btn.style.cursor = 'pointer';
+          btn.style.background = '#0070f3';
+          btn.style.color = 'white';
+          btn.addEventListener('click', () => {
+            answers.push(option);
+            currentQ++;
+            showQuestion();
+          });
+          quizResult.appendChild(btn);
+        });
+      }
+
+      function recommendTemplate() {
+        // 아주 간단 매칭 예시
+        let category = 'product';
+        if (answers.includes('블로그')) category = 'blog';
+        else if (answers.includes('포트폴리오')) category = 'portfolio';
+
+        // 최고 평점 템플릿 추천
+        const candidates = templates.filter(t => t.category === category);
+        const best = candidates.reduce((max, t) => t.rating > max.rating ? t : max, candidates[0]);
+
+        quizResult.innerHTML = `
+          <p>추천 템플릿은 <strong>${best.title}</strong>입니다!</p>
+          <a href="${best.useUrl}" target="_blank" class="button-use">바로 사용하기</a>
+        `;
+      }
+
+      showQuestion();
+    });
+
+    // 페이지 초기 로드 시 전체 카드 표시
+    renderCards();
+  </script>
+</body>
+</html>

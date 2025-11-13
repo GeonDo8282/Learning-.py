@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오리샵 · macOS 스타일 웹사이트</title>
+  <meta name="description" content="macOS 감성의 미니멀한 쇼핑 사이트 · 오리샵" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' x='6' font-size='56'%3E%F0%9F%A6%86%3C/text%3E%3C/svg%3E"/>
+  <style>
+    /* === Design Tokens === */
+    :root {
+      --bg: #0b0c0e;
+      --surface: rgba(255,255,255,0.06);
+      --text: #eaecef;
+      --muted: #a9b0ba;
+      --accent: #4da3ff;
+      --accent-2: #8b5cf6;
+      --ring: 0 0 0 2px rgba(77,163,255,.35), 0 8px 30px rgba(0,0,0,.35);
+      --radius-xl: 24px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --blur: saturate(160%) blur(14px);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
+      --grid-gap: clamp(14px, 2vw, 22px);
+    }
+
+    /* Light theme */
+    :root.light {
+      --bg: #f5f7fb;
+      --surface: rgba(255,255,255,.7);
+      --text: #0c0d12;
+      --muted: #5b6472;
+      --accent: #007aff;
+      --accent-2: #6d28d9;
+      --ring: 0 0 0 2px rgba(0,122,255,.25), 0 12px 36px rgba(16,24,40,.15);
+      --shadow-soft: 0 10px 24px rgba(16,24,40,.14);
+    }
+
+    /* === Base === */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      background: radial-gradient(1200px 600px at 70% -10%, rgba(77,163,255,.28), transparent 40%),
+                  radial-gradient(1000px 500px at 10% -10%, rgba(139,92,246,.25), transparent 45%),
+                  var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: .02em;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    button { font: inherit; color: inherit; }
+
+    /* === macOS Menu Bar === */
+    .menubar {
+      position: sticky; top: 0; z-index: 40;
+      height: 44px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      backdrop-filter: var(--blur);
+      background: linear-gradient(to bottom, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .apple { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    .apple .logo { font-size: 18px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+    .menu {
+      display: flex; gap: 18px; align-items: center; font-size: 14px; color: var(--muted);
+    }
+    .menu a { padding: 6px 8px; border-radius: 8px; }
+    .menu a.active, .menu a:hover { color: var(--text); background: rgba(255,255,255,.08); }
+    .statusbar { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* === Hero Window === */
+    .container { width: min(1200px, 92vw); margin: 28px auto 120px; }
+    .window {
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+    .traffic {
+      height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(to bottom, rgba(255,255,255,.14), rgba(255,255,255,.02));
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #28c840; }
+
+    .hero {
+      display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--grid-gap);
+      padding: clamp(22px, 4vw, 38px);
+      align-items: center;
+    }
+    .hero h1 { font-size: clamp(28px, 4.8vw, 48px); line-height: 1.06; margin: 6px 0 14px; }
+    .hero p { color: var(--muted); font-size: clamp(14px, 1.7vw, 18px); }
+
+    .card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg); padding: clamp(14px, 2vw, 18px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
+      box-shadow: var(--shadow-soft);
+      cursor: pointer; transition: transform .08s ease, box-shadow .2s ease;
+    }
+    .btn.primary { background: linear-gradient(180deg, rgba(77,163,255,.8), rgba(77,163,255,.55)); border-color: rgba(77,163,255,.9); color: #06101d; font-weight: 700; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,0,0,.35); }
+
+    .searchbar { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .searchbar input {
+      width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06); color: var(--text);
+    }
+
+    /* Feature strip */
+    .strip {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); margin-top: var(--grid-gap);
+    }
+    .feature { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+
+    /* Products */
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); margin-top: 24px; }
+    .col-3 { grid-column: span 3; }
+    .product {
+      position: relative; overflow: hidden; border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.12);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .product:hover { transform: translateY(-4px); box-shadow: 0 18px 46px rgba(0,0,0,.38); }
+    .thumb { aspect-ratio: 4/3; display: grid; place-items: center; font-size: 54px; }
+    .meta { padding: 14px; display: grid; gap: 6px; }
+    .price { font-weight: 700; }
+    .badge { position: absolute; top: 12px; left: 12px; font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.2);}
+
+    /* Footer */
+    footer { margin: 80px auto 140px; width: min(1100px, 90vw); color: var(--muted); display: grid; gap: 8px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--grid-gap); }
+    .footer-card { padding: 14px; border-radius: var(--radius-md); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+
+    /* Dock */
+    .dock {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      display: flex; gap: 14px; align-items: flex-end; padding: 12px 16px; border-radius: 20px;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.16);
+      box-shadow: var(--shadow-soft); backdrop-filter: var(--blur);
+    }
+    .dock-btn {
+      width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; font-size: 28px; cursor: pointer;
+      transition: transform .12s ease; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .dock-btn:hover { transform: translateY(-8px) scale(1.08); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .strip { grid-template-columns: 1fr; }
+      .col-3 { grid-column: span 6; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .container { margin-bottom: 140px; }
+      .col-3 { grid-column: span 12; }
+      .menubar { gap: 6px; }
+      .menu { gap: 10px; overflow: auto; }
+      .dock { bottom: 12px; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- macOS Menu Bar -->
+  <header class="menubar" role="navigation" aria-label="macOS-style menu">
+    <div class="apple">
+      <span class="logo" aria-hidden></span>
+      <a class="menu-item" href="#top" style="font-weight:700">오리샵</a>
+    </div>
+    <nav class="menu" aria-label="주 메뉴">
+      <a href="#featured" class="active">추천</a>
+      <a href="#new">신상품</a>
+      <a href="#sale">세일</a>
+      <a href="#support">고객지원</a>
+      <a href="#about">소개</a>
+    </nav>
+    <div class="statusbar">
+      <span class="pill" id="themeToggle" role="button" aria-pressed="false" tabindex="0">🌙 테마</span>
+      <span class="pill" id="clock" aria-live="polite">--:--</span>
+    </div>
+  </header>
+
+  <main class="container" id="top">
+    <!-- macOS Style Window / Hero -->
+    <section class="window" aria-labelledby="hero-title">
+      <div class="traffic">
+        <span class="dot red" title="닫기"></span>
+        <span class="dot yellow" title="최소화"></span>
+        <span class="dot green" title="확대"></span>
+      </div>
+      <div class="hero">
+        <div>
+          <span class="pill" style="margin-bottom:10px">🦆 오리처럼 단정하고 귀엽게</span>
+          <h1 id="hero-title">오리샵 — macOS 감성의 미니멀 스토어</h1>
+          <p>애플스러운 깔끔함과 감성적인 유리질감 UI. 필요한 것만 담은 심플한 구성으로 탐색부터 결제까지 빠르게. 오늘의 베스트 상품을 만나보세요.</p>
+
+          <div class="searchbar" role="search">
+            <input type="search" id="search" placeholder="무엇을 찾으시나요? (예: 키보드, 케이블, 거치대)" aria-label="검색" />
+            <button class="btn" id="searchBtn" aria-label="검색 실행">🔍 검색</button>
+          </div>
+
+          <div class="actions">
+            <a href="#featured" class="btn primary">지금 인기 상품 보기</a>
+            <a href="#about" class="btn">스토어 소개</a>
+          </div>
+        </div>
+        <div class="card" aria-hidden="true">
+          <img alt="유리질감 카드 안에 제품 콜라주" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%23aad4ff' offset='0'/%3E%3Cstop stop-color='%23c8b5ff' offset='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='%23ffffff10'/%3E%3Ccircle cx='180' cy='160' r='120' fill='url(%23g)' opacity='.6'/%3E%3Crect x='340' y='80' rx='22' ry='22' width='320' height='220' fill='%23ffffff30'/%3E%3Crect x='80' y='330' rx='22' ry='22' width='440' height='220' fill='%23ffffff18'/%3E%3C/svg%3E"/>
+        </div>
+      </div>
+
+      <div class="strip" id="featured" aria-label="주요 혜택">
+        <div class="feature"><span>🚚</span><div><strong>오늘 출발</strong><br/><small>평일 오후 3시 전 주문</small></div></div>
+        <div class="feature"><span>💳</span><div><strong>안전 결제</strong><br/><small>애플 감성 UI로 자연스러운 흐름</small></div></div>
+        <div class="feature"><span>💬</span><div><strong>실시간 상담</strong><br/><small>디스코드 & 카카오 연동</small></div></div>
+      </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="grid" aria-label="상품 목록" style="margin-top:28px">
+      <!-- Product Card Template (repeat) -->
+      <article class="product col-3" aria-labelledby="p1-title">
+        <span class="badge">NEW</span>
+        <div class="thumb">🦆</div>
+        <div class="meta">
+          <h3 id="p1-title">오리 케이블 정리 클립 (4pcs)</h3>
+          <div class="price">₩6,900</div>
+          <small class="muted">책상 케이블을 깔끔하게 정리</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p2-title">
+        <div class="thumb">⌨️</div>
+        <div class="meta">
+          <h3 id="p2-title">저소음 키캡 세트 · 화이트</h3>
+          <div class="price">₩29,000</div>
+          <small>손끝에 닿는 산뜻함</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p3-title">
+        <span class="badge">HOT</span>
+        <div class="thumb">🔌</div>
+        <div class="meta">
+          <h3 id="p3-title">USB‑C to C 100W 케이블</h3>
+          <div class="price">₩12,900</div>
+          <small>고속 충전 · 2m</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p4-title">
+        <div class="thumb">📱</div>
+        <div class="meta">
+          <h3 id="p4-title">마그네틱 거치대</h3>
+          <div class="price">₩15,900</div>
+          <small>알루미늄 · 각도 조절</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p5-title">
+        <div class="thumb">🎧</div>
+        <div class="meta">
+          <h3 id="p5-title">이어쿠션 폼 팁 (3쌍)</h3>
+          <div class="price">₩8,900</div>
+          <small>차음성 · 편안함</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p6-title">
+        <span class="badge">SALE</span>
+        <div class="thumb">🖱️</div>
+        <div class="meta">
+          <h3 id="p6-title">저피로 마우스패드 · 대형</h3>
+          <div class="price">₩11,900</div>
+          <small>손목 보호</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p7-title">
+        <div class="thumb">💡</div>
+        <div class="meta">
+          <h3 id="p7-title">데스크 라이트 · 3단 밝기</h3>
+          <div class="price">₩24,900</div>
+          <small>따뜻한 조명</small>
+        </div>
+      </article>
+
+      <article class="product col-3" aria-labelledby="p8-title">
+        <div class="thumb">🧼</div>
+        <div class="meta">
+          <h3 id="p8-title">기기 클리너 키트</h3>
+          <div class="price">₩9,900</div>
+          <small>스크린/키보드 전용</small>
+        </div>
+      </article>
+    </section>
+
+    <!-- Footer like System Settings panes -->
+    <footer id="about">
+      <h2 style="margin:0 0 10px 0">오리샵 안내</h2>
+      <div class="footer-grid">
+        <div class="footer-card"><strong>배송</strong><br/><small>전국 택배 · 픽업 지원</small></div>
+        <div class="footer-card"><strong>교환/환불</strong><br/><small>수령 7일 내 간편 처리</small></div>
+        <div class="footer-card"><strong>AS/보증</strong><br/><small>제품별 상이 · 상세 페이지 참고</small></div>
+        <div class="footer-card" id="support"><strong>고객지원</strong><br/><small>이메일 · 디스코드 · 카카오</small></div>
+      </div>
+      <small style="margin-top:8px">© <span id="year"></span> 오리샵 — 이 사이트는 학습/포트폴리오용 macOS 스타일 데모입니다.</small>
+    </footer>
+  </main>
+
+  <!-- macOS Dock -->
+  <div class="dock" role="toolbar" aria-label="Dock">
+    <button class="dock-btn" title="홈" onclick="scrollToEl('#top')">🏠</button>
+    <button class="dock-btn" title="추천" onclick="scrollToEl('#featured')">⭐</button>
+    <button class="dock-btn" title="신상품" onclick="alert('신상품 카테고리는 데모입니다 🙂')">🛍️</button>
+    <button class="dock-btn" title="검색" onclick="document.querySelector('#search').focus()">🔎</button>
+    <button class="dock-btn" title="고객지원" onclick="scrollToEl('#support')">🆘</button>
+  </div>
+
+  <script>
+    // Live clock like macOS statusbar
+    function tickClock(){
+      const el = document.getElementById('clock');
+      const d = new Date();
+      const opts = { hour: '2-digit', minute: '2-digit' };
+      el.textContent = new Intl.DateTimeFormat('ko-KR', opts).format(d);
+    }
+    tickClock(); setInterval(tickClock, 1000);
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Smooth scroll helper
+    function scrollToEl(sel){
+      const el = document.querySelector(sel);
+      if(!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.scrollToEl = scrollToEl;
+
+    // Theme toggle (light/dark)
+    const root = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('duck-theme');
+    if(saved === 'light') root.classList.add('light');
+    themeToggle.setAttribute('aria-pressed', root.classList.contains('light'));
+
+    function toggleTheme(){
+      root.classList.toggle('light');
+      const isLight = root.classList.contains('light');
+      localStorage.setItem('duck-theme', isLight ? 'light' : 'dark');
+      themeToggle.setAttribute('aria-pressed', isLight);
+      themeToggle.textContent = isLight ? '☀️ 테마' : '🌙 테마';
+    }
+    themeToggle.addEventListener('click', toggleTheme);
+    themeToggle.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); toggleTheme(); }});
+
+    // Fake search (filters by title text)
+    const search = document.getElementById('search');
+    const searchBtn = document.getElementById('searchBtn');
+    const products = [...document.querySelectorAll('.product')];
+
+    function doSearch(){
+      const q = search.value.trim().toLowerCase();
+      products.forEach(p => {
+        const t = p.querySelector('h3').textContent.toLowerCase();
+        p.style.display = t.includes(q) ? '' : 'none';
+      });
+    }
+    search.addEventListener('input', doSearch);
+    searchBtn.addEventListener('click', doSearch);
+  </script>
+</body>
+</html>

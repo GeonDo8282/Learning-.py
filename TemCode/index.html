@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>주문제작, 웹사이트 쉽게 만들기 | TemCode</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='0' y='52' font-size='52'%3E💙%3C/text%3E%3C/svg%3E" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header fixed-header">
+    <div class="container header-flex">
+      <div class="logo" id="logo">
+      <div class="logo" id="logo">TemCode</div> <!-- 상단 내비게이션 로고 -->
+</div>
+      <nav class="nav-menu">
+        <ul class="nav-links">
+          <li><a href="reviews.html" data-lang-key="reviews_services">고객 후기</a></li>
+          <li><a href="photo.html" data-lang-key="photo_templates">템플릿</a></li>
+          <li><a href="template-explore.html" data-lang-key="nav_template_explore">추천 AI & 리뷰</a></li> <!-- 새 서브 페이지 링크 -->
+          <li><a href="Team Introduction.html" data-lang-key="Team Introduction_pricing">팀 소개</a></li>
+          <li><a href="services.html" data-lang-key="services_contact">서비스 소개</a></li>
+          <li><a href="Minipay.html" data-lang-key="Minipay_explore">Minipay</a></li> <!-- 새 서브 페이지 링크 -->
+        </ul>
+        <button class="hamburger" aria-label="메뉴 열기/닫기">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+      <div class="lang-switch">
+        <button id="btn-ko" class="active">KO</button>
+        <button id="btn-en">EN</button>
+      </div>
+
+  <div class="user-auth">
+    <a href="login.html" id="login-btn">로그인</a>
+    <a href="signup.html" id="signup-btn">회원가입</a>
+    <span id="user-welcome" style="display:none;">
+      안녕하세요, <strong id="user-name"></strong>님
+    </span>
+    <button id="logout-btn" style="display:none;">로그아웃</button>
+  </div>
+</header>
+
+    </div>
+  </header>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>토스 스타일 히어로 섹션</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SUIT:wght@400;700&display=swap');
+
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'SUIT', sans-serif;
+    background: linear-gradient(180deg, #e6f0fa 0%, #c5d5f5 100%);
+  }
+
+  #hero {
+    text-align: center;
+    padding: 80px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(180deg, #e6f0fa 0%, #c5d5f5 100%);
+  }
+
+  #hero h1 {
+    font-weight: 700;
+    font-size: 3rem;
+    color: #121212;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  #hero p {
+    font-weight: 400;
+    font-size: 1.4rem;
+    color: #454545;
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background-color: #3a7bfd;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+
+  .btn-primary:hover {
+    background-color: #2f64d7;
+  }
+
+  .scroll-arrow {
+    margin: 80px auto 0; /* 화살표 아래로 더 내림 */
+    display: block;
+    width: 40px;  /* 크기 약간 키움 */
+    height: 40px;
+    cursor: pointer;
+    animation: bounce 1.8s ease-in-out infinite; /* 애니메이션 속도 및 범위 조절 */
+    filter: drop-shadow(0 1.5px 1px rgba(0,0,0,0.12)); /* 부드러운 그림자 */
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(12px); }
+  }
+
+  @media (max-width: 768px) {
+    #hero h1 {
+      font-size: 2rem;
+    }
+
+    #hero p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn-primary {
+      font-size: 1rem;
+      padding: 12px 24px;
+    }
+  }
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TemCode - 웹사이트 주문</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'SUIT', 'Noto Sans KR', sans-serif;
+      background-color: #ffffff;
+      color: #121212;
+    }
+
+    .hero {
+      padding: 120px 20px 100px;
+      text-align: center;
+      background: #fff;
+      position: relative;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      transition: opacity 0.5s ease-in-out;
+      color: #121212;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: #454545;
+      margin-bottom: 2rem;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 28px;
+      background-color: #3a7bfd;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(58, 123, 253, 0.25);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #2e63e6;
+      transform: translateY(-2px);
+    }
+
+    .scroll-arrow {
+      margin-top: 50px;
+      width: 36px;
+      height: 36px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(8px);
+      }
+    }
+
+    .container {
+      max-width: 1024px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="hero" class="hero fade-in">
+    <div class="container hero-content">
+      <h1 data-lang-key="hero_title">원하는 웹사이트, 쉽게 주문하세요</h1>
+      <p data-lang-key="hero_subtitle">포트폴리오, 블로그, 브랜드 페이지까지 – 맞춤형 제작 서비스 제공</p>
+<div class="btn-wrapper">
+  <button class="promo-btn" onclick="openPromoDetails()">🎉 최대 20% 할인 이벤트!</button>
+</div>
+      <!-- 아래 화살표 SVG with gradient -->
+      <svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="arrowGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a7bfd"/>
+            <stop offset="100%" stop-color="#5ac8fa"/>
+          </linearGradient>
+        </defs>
+        <path d="M6 9l6 6 6-6" stroke="url(#arrowGradient)" stroke-width="3" fill="none" />
+      </svg>
+    </div>
+  </section>
+
+  <script>
+    const textArray = ["지금 시작하세요, 전문가가 함께합니다", "내 브랜드에 딱 맞는 웹 제작"];
+    let index = 0;
+
+    setInterval(() => {
+      const textEl = document.querySelector('[data-lang-key="hero_title"]');
+      if (textEl) {
+        textEl.style.opacity = 0;
+        setTimeout(() => {
+          textEl.textContent = textArray[index];
+          textEl.style.opacity = 1;
+          index = (index + 1) % textArray.length;
+        }, 300);
+      }
+    }, 3000);
+  </script>
+</body>
+</html>
+
+
+    <section id="services" class="section fade-in">
+      <div class="container">
+        <h2 data-lang-key="services_title">🛠️ 제공 서비스</h2>
+        <div class="cards">
+          <div class="card">
+            <h3 data-lang-key="service_resp">반응형 웹</h3>
+            <p data-lang-key="service_resp_desc">모바일, 태블릿, PC까지 완벽 대응</p>
+          </div>
+          <div class="card">
+            <h3 data-lang-key="service_multi">다국어 지원</h3>
+            <p data-lang-key="service_multi_desc">한국어와 영어를 자유롭게 전환</p>
+          </div>
+          <div class="card">
+            <h3 data-lang-key="service_form">폼 연동</h3>
+            <p data-lang-key="service_form_desc">디스코드 웹훅 폼 연동 가능</p>
+          </div>
+          <div class="card">
+            <h3 data-lang-key="service_anim">애니메이션</h3>
+            <p data-lang-key="service_anim_desc">부드러운 인터랙션 효과 포함</p>
+          </div>
+          <div class="card">
+            <h3 data-lang-key="service_custom">100% 맞춤 제작</h3>
+            <p data-lang-key="service_custom_desc">고객 요구에 딱 맞는 디자인</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section id="templates" class="section section-light fade-in">
+  <div class="container">
+    <h2 data-lang-key="templates_title">🎨 인기 템플릿</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/9ba07f96-2ad3-4b20-96ca-84c6c291e3e5/Leonardo_Phoenix_10_Clean_and_minimalistic_product_showcase_im_0.jpg" alt="감성 블로그 템플릿 미리보기" />
+        <h3 data-lang-key="template_blog">감성 블로그</h3>
+        <p data-lang-key="template_blog_desc">따뜻하고 부드러운 디자인</p>
+      </div>
+      <div class="card">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/3dfb470a-bbec-4ca6-ac0a-6b7a6e722e1f/Leonardo_Phoenix_10_a_cute_and_professional_UIstyle_promotiona_3.jpg" alt="포트폴리오 템플릿 미리보기" />
+        <h3 data-lang-key="template_portfolio">포트폴리오</h3>
+        <p data-lang-key="template_portfolio_desc">개발자/디자이너 전용 슬라이드</p>
+      </div>
+      <div class="card">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/27f0e7ea-6241-4b1c-8f25-c4e322385e61/Leonardo_Phoenix_10_A_clean_and_modern_product_portfolio_heade_1.jpg" alt="제품 소개 템플릿 미리보기" />
+        <h3 data-lang-key="template_product">제품 소개</h3>
+        <p data-lang-key="template_product_desc">서비스와 제품 홍보용 랜딩페이지</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <section id="pricing" class="section fade-in">
+      <div class="container">
+        <h2 data-lang-key="pricing_title">💰 요금제 안내</h2>
+        <div class="pricing-cards">
+          <div class="price-box">
+            <h3 data-lang-key="pricing_free">무료</h3>
+            <p data-lang-key="pricing_free_desc">기본 템플릿 제공</p>
+            <p><strong>₩0</strong></p>
+          </div>
+          <div class="price-box popular">
+            <h3 data-lang-key="pricing_basic">기본형</h3>
+            <p data-lang-key="pricing_basic_desc">+ 다국어, 애니메이션 포함</p>
+            <p><strong>₩13,600</strong></p>
+          </div>
+          <div class="price-box">
+            <h3 data-lang-key="pricing_advanced">고급형</h3>
+            <p data-lang-key="pricing_advanced_desc">+ 맞춤 제작 및 디스코드 폼 연동</p>
+            <p><strong>₩69,900</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section section-light fade-in">
+      <div class="container">
+        <h2 data-lang-key="contact_title">📬 주문서 작성</h2>
+        <form id="contactForm">
+          <input type="text" name="name" placeholder="이름 또는 닉네임" required />
+          <input type="email" name="email" placeholder="이메일 또는 디스코드 ID" required />
+          <select name="service" required>
+            <option value="" disabled selected data-lang-key="contact_service_select">원하는 서비스 선택</option>
+            <option value="basic" data-lang-key="contact_service_basic">기본형</option>
+            <option value="advanced" data-lang-key="contact_service_advanced">고급형 (폼 연동 포함)</option>
+          </select>
+          <textarea name="details" placeholder="구체적인 요청사항을 적어주세요."></textarea>
+          <button type="submit" class="btn-primary" data-lang-key="contact_submit">의뢰하기</button>
+        </form>
+        <p class="form-message"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>ⓒ 2025 TemCode. 모든 권리 보유.</p>
+      <small>제작문의: kjhiuyfddst5432@gmail.com / 디스코드: tori_emon</small>
+    </div>
+<section id="pricing" class="section fade-in">
+  <div class="container">
+    <div class="pricing-cards">
+      <div class="price-box popular" style="text-align:center;">
+        <h3 class="plan-title">심플 &amp; 강력한 웹</h3>
+        <p class="plan-desc">다국어 기능과 트렌디한 애니메이션 제공</p>
+        <p class="plan-price">₩13,600 ~ ₩69,900</p>
+        <a href="payment.html" target="_blank" class="btn-payment">✨ 나만의 웹사이트 완성하기</a>
+        <br />
+        <a href="terms.html" class="btn-terms" style="display:block; margin-top:1rem;">이용약관 보기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="business-info-main" aria-label="TemCode 사업자 및 고객 정보 안내">
+  <div class="biz-container">
+    <h2 class="biz-title">회사 정보</h2>
+    <div class="biz-info">
+      <p><strong>상호명:</strong> TemCode (대표: 박건도)</p>
+      <p><strong>사업자등록번호:</strong> 123-45-67890</p>
+      <p><strong>통신판매업신고번호:</strong> 제2025-광양-0001호</p>
+      <p><strong>주소:</strong> 전라남도 광양시 테크로 101, TemCode 타워 5층</p>
+      <p><strong>이메일 문의:</strong> kjhiuyfddst5432@gmail.com</p>
+    </div>
+
+    <div class="biz-links">
+      <a href="terms.html">서비스 이용약관</a>
+      <a href="privacy.html" style="color:#0a84ff; text-decoration:none;">개인정보 처리방침</a>
+<a href="email-policy.html">통합회원약관</a>
+<a href="terms.html">이메일 무단수집 거부</a>
+<a href="tarns.html">자주 묻는 질문</a>
+<a href="Customer Support.html">고객 센터</a>
+<a href="Partner.html">파트너 / 제휴</a>
+<a href="Whispered Verse.html">🌱 콕! 눌러봐</a>
+
+  <div class="sns-links apple-style" aria-label="SNS 연결 링크 - 애플 스타일">
+  <a href="https://www.facebook.com/YourPage" target="_blank" rel="noopener" aria-label="페이스북" class="sns-icon facebook" title="Facebook">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28" >
+      <path d="M22 12a10 10 0 1 0-11.5 9.8v-6.9h-3v-2.9h3v-2.2c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 1-2 2v2h3.5l-.5 2.9h-3v6.9A10 10 0 0 0 22 12z"/>
+    </svg>
+  </a>
+  <a href="https://www.instagram.com/YourProfile" target="_blank" rel="noopener" aria-label="인스타그램" class="sns-icon instagram" title="Instagram">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+      <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.88 1.38a1.12 1.12 0 1 1 0 2.25 1.12 1.12 0 0 1 0-2.25zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+    </svg>
+  </a>
+  <a href="https://blog.naver.com/YourBlog" target="_blank" rel="noopener" aria-label="네이버 블로그" class="sns-icon naver" title="Naver Blog">
+    <svg viewBox="0 0 24 24" fill="#03C75A" width="28" height="28">
+      <path d="M3 3h18v18H3z"/>
+      <path d="M6.5 16.5V7.5h2l3.5 6v-6h2v9h-2l-3.5-6v6z" fill="#fff"/>
+    </svg>
+  </a>
+  <a href="https://www.youtube.com/channel/YourChannel" target="_blank" rel="noopener" aria-label="유튜브" class="sns-icon youtube" title="YouTube">
+    <svg viewBox="0 0 24 24" fill="#FF0000" width="28" height="28">
+      <path d="M10 15l5-3-5-3v6z"/>
+      <path d="M21.8 7.2s-.2-1.5-.8-2.2c-.7-.9-1.5-.9-1.9-1-2.7-.2-6.7-.2-6.7-.2h-.1s-4 0-6.7.2c-.4 0-1.3.1-1.9 1-.6.7-.8 2.2-.8 2.2S3 8.9 3 10.6v2.8c0 1.7.2 3.4.2 3.4s.2 1.5.8 2.2c.7.9 1.6.9 2 1 1.5.1 6.3.2 6.3.2s4 0 6.7-.2c.4 0 1.3-.1 1.9-1 .6-.7.8-2.2.8-2.2s.2-1.7.2-3.4v-2.8c0-1.7-.2-3.4-.2-3.4z"/>
+    </svg>
+  </a>
+</div>
+
+
+</section>
+
+  <script src="script.js"></script>
+
+<a href="https://pf.kakao.com/_yourchannel" target="_blank" rel="noopener" aria-label="카카오톡 채팅 상담" class="chat-support-btn">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#3C1E1E" viewBox="0 0 24 24" aria-hidden="true" style="margin-right:8px;">
+    <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+  </svg>
+  채팅 상담
+</a>
+
+</body>
+</html>

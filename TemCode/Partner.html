@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>TemCode 제휴 & 파트너십</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset & 기본 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'SUIT', sans-serif;
+      background: #fff;
+      color: #121212;
+      line-height: 1.5;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid #f1f3f5;
+      padding: 16px 24px;
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: #3a7bfd;
+      letter-spacing: 0.05em;
+      z-index: 10;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+      color: #3a7bfd;
+      text-align: center;
+    }
+    h2 {
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin: 48px 0 16px 0;
+      border-left: 4px solid #3a7bfd;
+      padding-left: 12px;
+      color: #121212;
+    }
+
+    p.lead {
+      font-size: 1.1rem;
+      color: #454545;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* 제휴 조건 박스 */
+    .terms-box {
+      background: #f9fbff;
+      border: 1px solid #dbe4ff;
+      border-radius: 12px;
+      padding: 24px 28px;
+      max-width: 700px;
+      margin: 0 auto 48px auto;
+      color: #121212;
+      font-size: 1rem;
+      box-shadow: 0 6px 18px rgba(58,123,253,0.12);
+      line-height: 1.5;
+    }
+    .terms-box ul {
+      margin: 0;
+      padding-left: 20px;
+      list-style-type: disc;
+    }
+    .terms-box li {
+      margin-bottom: 10px;
+    }
+
+    /* 파트너 로고 그리드 */
+    .partner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+      gap: 24px;
+      justify-items: center;
+      margin-top: 16px;
+      margin-bottom: 48px;
+    }
+    .partner {
+      width: 120px;
+      height: 60px;
+      filter: grayscale(30%);
+      transition: filter 0.3s ease;
+      cursor: default;
+      object-fit: contain;
+    }
+    .partner:hover {
+      filter: grayscale(0%);
+    }
+
+    /* 문의 폼 */
+    form {
+      max-width: 700px;
+      margin: 0 auto 60px auto;
+      background: #f9fbff;
+      padding: 28px 32px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(58,123,253,0.15);
+    }
+    form label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #3a7bfd;
+      font-size: 1rem;
+    }
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      border: 1.5px solid #dbe4ff;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'SUIT', sans-serif;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus,
+    form textarea:focus {
+      border-color: #3a7bfd;
+      outline: none;
+      box-shadow: 0 0 8px rgba(58,123,253,0.3);
+    }
+    form button {
+      background-color: #3a7bfd;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(58,123,253,0.35);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    form button:hover {
+      background-color: #2563eb;
+      box-shadow: 0 8px 22px rgba(37,99,235,0.45);
+    }
+
+    /* 메인 홈 버튼 */
+    .btn-primary {
+      display: inline-block;
+      margin: 0 auto;
+      padding: 14px 32px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background-color: #3a7bfd;
+      color: white;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(58, 123, 253, 0.35);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      text-align: center;
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+    }
+
+    /* 반응형 */
+    @media(max-width:600px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      h2 {
+        font-size: 1.3rem;
+      }
+      .terms-box {
+        padding: 20px;
+      }
+      form {
+        padding: 20px;
+      }
+      .partner-grid {
+        grid-template-columns: repeat(auto-fit,minmax(80px,1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    TemCode 제휴 & 파트너십
+  </header>
+
+  <main class="container">
+    <h1>함께 성장하는 파트너를 기다립니다</h1>
+    <p class="lead">
+      TemCode는 개발자, 디자이너, 크리에이터와의 협업을 통해 더 나은 서비스를 만들고자 합니다.<br />
+      제휴에 관심이 있다면 아래 내용을 확인 후 문의해 주세요.
+    </p>
+
+    <h2>제휴 조건</h2>
+    <div class="terms-box">
+      <ul>
+        <li>상호 신뢰와 투명성을 바탕으로 장기적 협력 관계를 추구합니다.</li>
+        <li>파트너사와의 정기 미팅 및 피드백을 통해 서비스 품질을 향상합니다.</li>
+        <li>공동 마케팅 및 프로모션 진행 가능.</li>
+        <li>기술 지원과 교육 프로그램 제공.</li>
+        <li>파트너 전용 할인 및 혜택 제공.</li>
+      </ul>
+    </div>
+
+    <h2>기존 파트너사</h2>
+    <div class="partner-grid">
+      <img class="partner" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Naver_Logo.svg" alt="Naver" title="Naver" />
+      <img class="partner" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" title="Apple" />
+      <img class="partner" src="https://upload.wikimedia.org/wikipedia/commons/7/75/Toss_Logo.svg" alt="Toss" title="Toss" />
+      <img class="partner" src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_2015_logo.svg" alt="Google" title="Google" />
+      <img class="partner" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Microsoft_logo.svg" alt="Microsoft" title="Microsoft" />
+    </div>
+
+    <h2>제휴 문의</h2>
+    <form id="partner-form" onsubmit="handleSubmit(event)">
+      <label for="name">이름</label>
+      <input type="text" id="name" name="name" placeholder="홍길동" required />
+
+      <label for="email">이메일</label>
+      <input type="email" id="email" name="email" placeholder="example@email.com" required />
+
+      <label for="company">소속 회사/팀명</label>
+      <input type="text" id="company" name="company" placeholder="회사명 또는 팀명" required />
+
+      <label for="message">문의 내용</label>
+      <textarea id="message" name="message" rows="5" placeholder="제휴 관련 문의 내용을 작성해주세요." required></textarea>
+
+      <button type="submit">문의 보내기</button>
+    </form>
+
+    <button class="btn-primary" onclick="location.href='index.html'">메인 홈으로 가기</button>
+  </main>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      alert('문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
+      e.target.reset();
+    }
+  </script>
+
+  <script>
+  const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1402175755412049982/JbkHimrLqr_Z9df8lQgDR7KVk5x_FPFR8oVAkoWa31mYjWSyO25noc8CZtY0daHPjQQ3";
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const company = form.company.value.trim();
+    const message = form.message.value.trim();
+
+    if (!name || !email || !company || !message) {
+      alert("모든 필드를 입력해 주세요.");
+      return;
+    }
+
+    // 디스코드 웹훅에 보낼 메시지 포맷
+    const content = 
+      `**[제휴 문의]**\n` +
+      `이름: ${name}\n` +
+      `이메일: ${email}\n` +
+      `회사/팀명: ${company}\n` +
+      `문의 내용:\n${message}`;
+
+    try {
+      const res = await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      if (res.ok) {
+        alert("문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.");
+        form.reset();
+      } else {
+        alert("문의 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        console.error("Discord webhook error:", res.status, await res.text());
+      }
+    } catch (error) {
+      alert("서버와 통신 중 오류가 발생했습니다.");
+      console.error("Fetch error:", error);
+    }
+  }
+</script>
+
+</body>
+</html>

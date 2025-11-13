@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로그인 | TemCode</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700&display=swap');
+    /* Reset & 기본 스타일 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'SUIT', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Noto Sans KR', sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #121212;
+    }
+    a {
+      color: #3a7bfd;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* 로그인 컨테이너 */
+    .login-container {
+      background: #fff;
+      padding: 40px 32px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(58,127,253,0.12);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .login-container h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 24px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border: 1.5px solid #d9d9d9;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #3a7bfd;
+      box-shadow: 0 0 8px #3a7bfd66;
+    }
+    button {
+      width: 100%;
+      background-color: #3a7bfd;
+      color: white;
+      padding: 14px 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2e62d9;
+    }
+    #login-error {
+      color: #e03e3e;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      min-height: 20px;
+      visibility: hidden;
+    }
+    #login-error.show {
+      visibility: visible;
+    }
+    p {
+      font-size: 0.95rem;
+      color: #454545;
+    }
+
+    /* 대시보드 스타일 */
+    #dashboard-view {
+      width: 100%;
+      max-width: 720px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(58,127,253,0.12);
+      padding: 32px;
+      box-sizing: border-box;
+      display: none;
+      flex-direction: column;
+    }
+    #dashboard-view header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e6e6e6;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    #dashboard-view header h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #3a7bfd;
+    }
+    #dashboard-view header button {
+      background: none;
+      border: none;
+      color: #3a7bfd;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: background-color 0.2s;
+    }
+    #dashboard-view header button:hover {
+      background-color: #e6f0ff;
+    }
+    #dashboard-view main {
+      font-size: 1.1rem;
+      color: #121212;
+    }
+    #dashboard-view main h2 {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #121212;
+    }
+    #dashboard-view main ul {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 24px;
+    }
+    #dashboard-view main ul li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    #dashboard-view main p {
+      line-height: 1.5;
+      color: #454545;
+    }
+
+    /* 홈 이동 버튼 */
+    #homeBtn {
+      margin-top: 16px;
+      align-self: flex-start;
+      background: #3a7bfd;
+      color: white;
+      padding: 10px 20px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    #homeBtn:hover {
+      background-color: #2e62d9;
+      text-decoration: none;
+      color: white;
+    }
+
+    /* 반응형 */
+    @media (max-width: 480px) {
+      .login-container, #dashboard-view {
+        max-width: 90vw;
+        padding: 24px 16px;
+      }
+      #dashboard-view header h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 로그인 뷰 -->
+  <div class="login-container" id="login-view" role="main" aria-label="로그인 폼">
+    <h1>로그인</h1>
+    <form id="login-form" aria-describedby="login-error" novalidate>
+      <input type="email" id="email" placeholder="이메일" aria-label="이메일 입력" required autocomplete="email" />
+      <input type="password" id="password" placeholder="비밀번호" aria-label="비밀번호 입력" required autocomplete="current-password" />
+      <div id="login-error" role="alert" aria-live="assertive"></div>
+      <button type="submit" aria-label="로그인 버튼">로그인</button>
+    </form>
+    <p>계정이 없으신가요? <a href="#">회원가입하기</a></p>
+  </div>
+
+  <!-- 대시보드 뷰 -->
+  <section id="dashboard-view" role="main" aria-label="사용자 대시보드">
+    <header>
+      <h1>TemCode 대시보드</h1>
+      <div>
+        <button id="logoutBtn" aria-label="로그아웃 버튼">로그아웃</button>
+      </div>
+    </header>
+    <main>
+      <p id="welcomeText">환영합니다, 사용자님!</p>
+
+      <section>
+        <h2>내 정보</h2>
+        <ul>
+          <li>이메일: <span id="userEmail"></span></li>
+          <li>가입일: 2025-01-01</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>서비스 안내</h2>
+        <p>TemCode에서 제공하는 다양한 서비스를 경험해보세요.</p>
+      </section>
+
+      <a href="index.html" id="homeBtn" aria-label="홈 화면으로 이동">홈 화면으로 이동</a>
+    </main>
+  </section>
+
+  <script>
+    const form = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const loginView = document.getElementById('login-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    const userEmailSpan = document.getElementById('userEmail');
+    const welcomeText = document.getElementById('welcomeText');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function showDashboard(email) {
+      loginView.style.display = 'none';
+      dashboardView.style.display = 'flex';
+      userEmailSpan.textContent = email;
+      welcomeText.textContent = `${email}님, 환영합니다!`;
+    }
+
+    function showLogin() {
+      loginView.style.display = 'block';
+      dashboardView.style.display = 'none';
+      loginError.classList.remove('show');
+      loginError.textContent = '';
+      form.reset();
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      // 테스트 계정 (실제 서비스 시 서버 인증으로 대체)
+      if(email === 'test@test.com' && password === 'test1234') {
+        loginError.classList.remove('show');
+        loginError.textContent = '';
+        localStorage.setItem('userEmail', email);
+        showDashboard(email);
+      } else {
+        loginError.textContent = '이메일 또는 비밀번호가 잘못되었습니다.';
+        loginError.classList.add('show');
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedEmail = localStorage.getItem('userEmail');
+      if(savedEmail) {
+        showDashboard(savedEmail);
+      } else {
+        showLogin();
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('userEmail');
+      showLogin();
+    });
+  </script>
+
+</body>
+</html>
+
+
+
+
+

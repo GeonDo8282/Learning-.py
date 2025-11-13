@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>고객 후기 및 성공 사례 | TemCode</title>
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset & 기본 스타일 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'SUIT', sans-serif;
+      background: #fff;
+      color: #121212;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a {
+      color: #3a7bfd;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 960px;
+      margin: 40px auto 60px;
+      padding: 0 20px;
+    }
+
+    /* 헤더 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #121212;
+    }
+    header nav a {
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background-color: #3a7bfd;
+      color: white;
+      box-shadow: 0 3px 8px rgb(58 123 253 / 0.3);
+      transition: background-color 0.3s ease;
+    }
+    header nav a:hover {
+      background-color: #2f63d9;
+    }
+
+    /* 리뷰 리스트 */
+    .review-list {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+      gap: 24px;
+    }
+
+    /* 개별 리뷰 카드 */
+    .review-card {
+      background: #f9fbff; /* 연한 하늘색 배경 */
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgb(58 123 253 / 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: box-shadow 0.3s ease;
+    }
+    .review-card:hover {
+      box-shadow: 0 6px 24px rgb(58 123 253 / 0.3);
+    }
+
+    .reviewer-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .reviewer-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background-color: #d1e2ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #3a7bfd;
+      margin-right: 12px;
+      user-select: none;
+    }
+    .reviewer-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #121212;
+    }
+    .reviewer-tag {
+      margin-left: auto;
+      background: #3a7bfd;
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .review-text {
+      font-size: 0.95rem;
+      color: #454545;
+      margin-bottom: 16px;
+      white-space: pre-line;
+    }
+
+    .review-rating {
+      color: #f5a623; /* 별 색상 */
+      font-size: 1.1rem;
+      user-select: none;
+    }
+
+    /* 반응형 */
+    @media(max-width: 600px) {
+      .container {
+        margin: 20px 15px 40px;
+      }
+      header h1 {
+        font-size: 1.5rem;
+      }
+      header nav a {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="container" role="banner">
+    <h1>고객 후기 및 성공 사례</h1>
+    <nav>
+      <a href="index.html" aria-label="홈페이지로 이동">홈으로</a>
+    </nav>
+  </header>
+
+  <main class="container" role="main" aria-labelledby="main-title">
+    <section>
+      <h2 id="main-title" class="sr-only">고객 후기 목록</h2>
+
+      <div class="review-list">
+        <!-- 리뷰 카드 예시 -->
+        <article class="review-card" tabindex="0" aria-label="김민수님의 후기">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar" aria-hidden="true">김</div>
+            <div class="reviewer-name">김*수</div>
+            <div class="reviewer-tag">고급형Pro 구매</div>
+          </div>
+          <p class="review-text">디자인이 매우 깔끔하고, 설치도 쉬워서 업무 효율이 크게 향상됐습니다. 강력 추천합니다!</p>
+          <div class="review-rating" aria-label="별점 5점 만점에 5점">★★★★★</div>
+        </article>
+
+        <article class="review-card" tabindex="0" aria-label="이수진님의 후기">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar" aria-hidden="true">이</div>
+            <div class="reviewer-name">이*진</div>
+            <div class="reviewer-tag">기본형 구매</div>
+          </div>
+          <p class="review-text">직관적인 UI 덕분에 서버 관리가 편리해졌어요. 고객 문의도 줄었고 만족합니다.</p>
+          <div class="review-rating" aria-label="별점 5점 만점에 4점">★★★★☆</div>
+        </article>
+
+        <article class="review-card" tabindex="0" aria-label="박현우님의 후기">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar" aria-hidden="true">박</div>
+            <div class="reviewer-name">박*우</div>
+            <div class="reviewer-tag">고급형Pro 구매</div>
+          </div>
+          <p class="review-text">한 번 구매 후에도 지속적인 무료 업데이트 덕분에 안심하고 사용할 수 있습니다.</p>
+          <div class="review-rating" aria-label="별점 5점 만점에 5점">★★★★★</div>
+        </article>
+
+        <!-- 여기서부터 추가 리뷰 계속 작성 -->
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TemCode 서비스 소개</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+    color: #121212;
+    line-height: 1.6;
+  }
+  a {
+    color: #3a7bfd;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Container */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #3a7bfd;
+    cursor: pointer;
+  }
+  .btn-home {
+    background-color: #3a7bfd;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 22px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(58, 123, 253, 0.3);
+  }
+  .btn-home:hover {
+    background-color: #5a9bff;
+  }
+
+  /* Hero section */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #3a7bfd;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: #555;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Services section */
+  .services {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin-top: 60px;
+  }
+  .service-card {
+    background: #f9fbff;
+    border-radius: 16px;
+    padding: 30px 24px;
+    box-shadow: 0 4px 12px rgba(58, 123, 253, 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+  .service-card:hover {
+    box-shadow: 0 8px 24px rgba(58, 123, 253, 0.25);
+  }
+  .service-icon {
+    font-size: 3.5rem;
+    color: #3a7bfd;
+    margin-bottom: 16px;
+  }
+  .service-title {
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+  }
+  .service-desc {
+    font-size: 1rem;
+    color: #454545;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 30px 20px;
+    border-top: 1px solid #eee;
+    margin-top: 80px;
+    color: #888;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .hero h1 {
+      font-size: 2rem;
+    }
+    .service-card {
+      padding: 20px 16px;
+    }
+  }
+</style>
+<!-- 아이콘용 Material Icons CDN -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+<body>
+  <header class="container">
+    <div class="logo" onclick="location.href='index.html'">TemCode</div>
+    <button class="btn-home" onclick="location.href='index.html'">홈으로 돌아가기</button>
+  </header>
+
+  <section class="hero">
+    <h1>TemCode 주요 서비스 소개</h1>
+    <p>TemCode는 전문적이고 신뢰할 수 있는 맞춤형 웹 솔루션을 제공합니다. 쉽고 빠른 주문부터 안정적인 유지보수까지, 고객님의 성공을 돕습니다.</p>
+  </section>
+
+  <section class="container services" aria-label="TemCode 서비스 목록">
+    <article class="service-card" tabindex="0">
+      <span class="material-icons service-icon" aria-hidden="true">precision_manufacturing</span>
+      <h2 class="service-title">맞춤형 웹사이트 제작</h2>
+      <p class="service-desc">고객의 요구사항에 꼭 맞춘, 완성도 높은 웹사이트를 제공합니다. 최신 기술과 디자인 트렌드를 반영합니다.</p>
+    </article>
+    <article class="service-card" tabindex="0">
+      <span class="material-icons service-icon" aria-hidden="true">payments</span>
+      <h2 class="service-title">간편한 결제 시스템</h2>
+      <p class="service-desc">토스, 페이코, 네이버페이 등 다양한 간편결제 연동으로 빠르고 안전한 결제를 지원합니다.</p>
+    </article>
+    <article class="service-card" tabindex="0">
+      <span class="material-icons service-icon" aria-hidden="true">update</span>
+      <h2 class="service-title">지속적인 업데이트 지원</h2>
+      <p class="service-desc">구매 후에도 최신 기능과 보안 패치를 꾸준히 제공하여 안정적인 운영을 돕습니다.</p>
+    </article>
+    <article class="service-card" tabindex="0">
+      <span class="material-icons service-icon" aria-hidden="true">support_agent</span>
+      <h2 class="service-title">전문 고객 지원</h2>
+      <p class="service-desc">실시간 문의, 디스코드 커뮤니티 등을 통해 빠르고 친절한 고객 지원을 제공합니다.</p>
+    </article>
+  </section>
+
+  <footer>
+    © 2025 TemCode. All rights reserved.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>회원가입 | TemCode</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header fixed-header">
+    <div class="container header-flex">
+      <div class="logo" id="logo">TemCode</div>
+      <nav class="nav-menu">
+        <ul class="nav-links">
+          <li><a href="index.html#services">서비스</a></li>
+          <li><a href="index.html#templates">템플릿</a></li>
+          <li><a href="index.html#pricing">요금제</a></li>
+          <li><a href="index.html#contact">주문</a></li>
+        </ul>
+        <button class="hamburger" aria-label="메뉴 열기/닫기">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+      <div class="lang-switch">
+        <button id="btn-ko" class="active">KO</button>
+        <button id="btn-en">EN</button>
+      </div>
+      <div class="user-auth">
+        <a href="login.html" id="login-btn">로그인</a>
+        <a href="signup.html" id="signup-btn">회원가입</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="auth-container">
+    <h1>회원가입</h1>
+    <form id="signup-form">
+      <input type="email" id="email" placeholder="이메일" required />
+      <input type="password" id="password" placeholder="비밀번호" required />
+      <input type="password" id="password-confirm" placeholder="비밀번호 확인" required />
+      <button type="submit" class="btn-primary">회원가입</button>
+    </form>
+    <p>
+      이미 계정이 있으신가요? <a href="login.html">로그인하기</a>
+    </p>
+    <p id="signup-error" style="color:red; display:none;"></p>
+  </main>
+
+  <script>
+    const form = document.getElementById('signup-form');
+    const signupError = document.getElementById('signup-error');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const email = form.email.value;
+      const password = form.password.value;
+      const passwordConfirm = form['password-confirm'].value;
+
+      if(password !== passwordConfirm){
+        signupError.textContent = '비밀번호가 일치하지 않습니다.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      // TODO: 실제 회원가입 API 호출 추가
+
+      // 임시 회원가입 성공 후 로그인 페이지 이동
+      alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

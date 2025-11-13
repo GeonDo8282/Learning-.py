@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; background: #fff; color: #000; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; }
+
+    /* 헤더 */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px; border-bottom: 1px solid #eaeaea;
+      position: sticky; top: 0; background: #fff; z-index: 1000;
+    }
+    .logo { font-size: 1.8rem; font-weight: 700; color: #007aff; }
+    nav a { margin-left: 20px; font-size: 1rem; font-weight: 500; color: #333; }
+    nav a:hover { color: #007aff; }
+
+    /* 검색창 */
+    .search-bar {
+      max-width: 700px; margin: 40px auto;
+      display: flex; align-items: center; background: #f5f5f7;
+      border-radius: 999px; padding: 10px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .search-bar input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 1rem; padding: 8px;
+    }
+    .search-bar button {
+      background: #007aff; color: #fff; border: none;
+      border-radius: 50%; width: 40px; height: 40px;
+      cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* 뉴스 */
+    .section {
+      max-width: 1100px; margin: 60px auto; padding: 0 20px;
+    }
+    .section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; }
+    .news-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+    }
+    .news-card {
+      background: #f9f9f9; padding: 20px; border-radius: 16px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .news-card:hover {
+      transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .news-card h3 { font-size: 1.1rem; margin-bottom: 10px; }
+    .news-card p { font-size: 0.95rem; color: #555; }
+
+    /* 날씨 */
+    .weather-box {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #f5f5f7; border-radius: 16px; padding: 20px;
+    }
+    .temp { font-size: 2rem; font-weight: 700; }
+    .desc { color: #555; }
+
+    /* 푸터 */
+    footer {
+      background: #f5f5f7; padding: 40px 20px; text-align: center;
+      font-size: 0.9rem; color: #666;
+    }
+    footer a { color: #007aff; margin: 0 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header>
+    <div class="logo">Portal</div>
+    <nav>
+      <a href="#">뉴스</a>
+      <a href="#">날씨</a>
+      <a href="#">쇼핑</a>
+      <a href="#">메일</a>
+    </nav>
+  </header>
+
+  <!-- 검색창 -->
+  <div class="search-bar">
+    <input type="text" placeholder="검색어를 입력하세요...">
+    <button>🔍</button>
+  </div>
+
+  <!-- 뉴스 섹션 -->
+  <section class="section">
+    <h2>실시간 뉴스</h2>
+    <div class="news-list">
+      <div class="news-card">
+        <h3>AI 기술 혁신 발표</h3>
+        <p>최신 AI 모델이 출시되어 전 세계 산업이 주목하고 있습니다.</p>
+      </div>
+      <div class="news-card">
+        <h3>경제 성장률 상향</h3>
+        <p>정부가 올해 경제 성장률 전망을 상향 조정했습니다.</p>
+      </div>
+      <div class="news-card">
+        <h3>우주 관광 시대 개막</h3>
+        <p>민간 우주 관광이 본격적으로 시작됩니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 날씨 섹션 -->
+  <section class="section">
+    <h2>오늘의 날씨</h2>
+    <div class="weather-box">
+      <div>
+        <div class="temp">26°C</div>
+        <div class="desc">맑음</div>
+      </div>
+      <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="날씨 아이콘" width="60">
+    </div>
+  </section>
+
+  <!-- 푸터 -->
+  <footer>
+    <p>© 2025 Portal. All rights reserved.</p>
+    <div>
+      <a href="#">이용약관</a> | <a href="#">개인정보처리방침</a> | <a href="#">고객센터</a>
+    </div>
+  </footer>
+
+</body>
+</html>

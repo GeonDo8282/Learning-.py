@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>주문하기 | TemCode</title>
+  <link href="https://cdn.jsdelivr.net/npm/suit-font@latest/css/suit.css" rel="stylesheet" />
+  <style>
+    /* (기존 스타일 동일) */
+    body {
+      margin: 0; padding: 0;
+      font-family: 'SUIT', 'Noto Sans KR', sans-serif;
+      background: #fff;
+      color: #121212;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgb(58 127 253 / 0.15);
+      border-radius: 14px;
+      padding: 2rem 2.5rem;
+      background: #f9faff;
+    }
+    h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #121212;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    label {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+      color: #454545;
+    }
+    input, textarea, select {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1.8px solid #d0d0d0;
+      outline-offset: 2px;
+      outline-color: transparent;
+      transition: border-color 0.25s ease;
+      resize: vertical;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #3a7bfd;
+      outline-color: #3a7bfd33;
+    }
+    button {
+      background-color: #3a7bfd;
+      color: white;
+      font-weight: 700;
+      font-size: 1.125rem;
+      padding: 0.85rem;
+      border-radius: 10px;
+      border: none;
+      box-shadow: 0 6px 16px rgb(58 127 253 / 0.3);
+      transition: background-color 0.3s ease;
+      user-select: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2a5edb;
+    }
+    .note {
+      font-size: 0.875rem;
+      color: #666666;
+      margin-top: 0.25rem;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #3a7bfd;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+    .back-btn:hover {
+      color: #1f4edb;
+      text-decoration: underline;
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem 1.75rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <button class="back-btn" onclick="history.back()">← 템플릿 갤러리로 돌아가기</button>
+    <h1>템플릿 주문하기</h1>
+    <form id="order-form" novalidate>
+      <label for="template">템플릿 이름</label>
+      <input type="text" id="template" name="template" readonly aria-readonly="true" />
+
+      <label for="name">성함 <sup aria-label="필수">*</sup></label>
+      <input type="text" id="name" name="name" required placeholder="이름을 입력하세요" />
+
+      <label for="email">이메일 <sup aria-label="필수">*</sup></label>
+      <input type="email" id="email" name="email" required placeholder="example@email.com" />
+
+      <label for="phone">연락처</label>
+      <input type="tel" id="phone" name="phone" placeholder="010-1234-5678" pattern="[0-9\-]+" />
+
+      <label for="details">요청사항 / 추가 문의</label>
+      <textarea id="details" name="details" rows="4" placeholder="예: 특별 요청, 문의사항 등을 적어주세요"></textarea>
+
+      <button type="submit">주문 제출하기</button>
+    </form>
+    <p class="note" id="form-message" aria-live="polite" style="color:#e53e3e; margin-top: 1rem;"></p>
+  </div>
+
+  <script>
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1402175755412049982/JbkHimrLqr_Z9df8lQgDR7KVk5x_FPFR8oVAkoWa31mYjWSyO25noc8CZtY0daHPjQQ3';
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    const templateInput = document.getElementById('template');
+    const form = document.getElementById('order-form');
+    const formMessage = document.getElementById('form-message');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const templateName = getQueryParam('template');
+      if (templateName) {
+        templateInput.value = decodeURIComponent(templateName);
+      } else {
+        templateInput.value = '';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.style.color = '#e53e3e';
+      formMessage.textContent = '';
+
+      // 기본 유효성 검사
+      if (!form.name.value.trim()) {
+        formMessage.textContent = '성함을 입력해주세요.';
+        form.name.focus();
+        return;
+      }
+      if (!form.email.value.trim()) {
+        formMessage.textContent = '이메일을 입력해주세요.';
+        form.email.focus();
+        return;
+      }
+      if (form.email.validity.typeMismatch) {
+        formMessage.textContent = '유효한 이메일 주소를 입력해주세요.';
+        form.email.focus();
+        return;
+      }
+
+      // 디스코드 웹훅 데이터 구성
+      const content = 
+        `새로운 템플릿 주문 접수!\n` +
+        `템플릿명: ${form.template.value}\n` +
+        `성함: ${form.name.value}\n` +
+        `이메일: ${form.email.value}\n` +
+        `연락처: ${form.phone.value || '없음'}\n` +
+        `요청사항: ${form.details.value || '없음'}`;
+
+      try {
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+
+        if (response.ok) {
+          formMessage.style.color = '#2f855a';
+          formMessage.textContent = '주문이 성공적으로 접수되었습니다. 감사합니다!';
+          form.querySelector('button[type="submit"]').disabled = true;
+          form.reset();
+        } else {
+          throw new Error('웹훅 전송 실패');
+        }
+      } catch (error) {
+        formMessage.textContent = '주문 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        console.error('Discord webhook error:', error);
+      }
+    });
+  </script>
+
+  
+</body>
+</html>

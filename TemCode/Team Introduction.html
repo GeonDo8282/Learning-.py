@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TemCode 팀 소개 & 비전</title>
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset & 기본 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'SUIT', sans-serif;
+      background: #fff;
+      color: #121212;
+      line-height: 1.5;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* 헤더 */
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid #f1f3f5;
+      padding: 16px 24px;
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: #3a7bfd;
+      letter-spacing: 0.05em;
+      z-index: 10;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* 타이틀 */
+    h1 {
+      font-weight: 700;
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+      color: #3a7bfd;
+      text-align: center;
+    }
+    h2 {
+      font-weight: 600;
+      font-size: 1.6rem;
+      margin: 48px 0 16px 0;
+      border-left: 4px solid #3a7bfd;
+      padding-left: 12px;
+      color: #121212;
+    }
+    p.lead {
+      font-size: 1.1rem;
+      color: #454545;
+      max-width: 600px;
+      margin: 0 auto 40px auto;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* 팀 멤버 그리드 */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+      gap: 28px;
+      justify-items: center;
+      margin-top: 16px;
+    }
+    .member {
+      text-align: center;
+    }
+    .member img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 20px rgba(58,123,253,0.15);
+      transition: transform 0.3s ease;
+      cursor: default;
+    }
+    .member:hover img {
+      transform: scale(1.07);
+    }
+    .member-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+      color: #121212;
+    }
+    .member-role {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* 비전 리스트 */
+    .vision-list {
+      max-width: 700px;
+      margin: 0 auto 60px auto;
+      padding-left: 16px;
+      border-left: 3px solid #3a7bfd;
+      color: #121212;
+    }
+    .vision-item {
+      margin-bottom: 24px;
+      position: relative;
+      padding-left: 16px;
+      font-size: 1rem;
+    }
+    .vision-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 6px;
+      width: 10px; height: 10px;
+      background: #3a7bfd;
+      border-radius: 50%;
+    }
+
+    /* 푸터 */
+    footer {
+      border-top: 1px solid #f1f3f5;
+      padding: 24px 20px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+
+    /* 메인 버튼 */
+    .btn-primary {
+      display: inline-block;
+      margin: 0 auto 40px auto;
+      padding: 14px 28px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      background-color: #3a7bfd;
+      color: white;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(58, 123, 253, 0.35);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      text-align: center;
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    TemCode 팀 소개
+  </header>
+
+  <main class="container">
+    <h1>TemCode 팀을 소개합니다</h1>
+    <p class="lead">
+      TemCode는 최고의 웹사이트 제작 경험을 위해 모인 전문가 팀입니다.<br/>
+      신뢰와 혁신, 그리고 고객 만족을 최우선으로 합니다.
+    </p>
+
+    <h2>팀 멤버</h2>
+    <div class="team-grid">
+      <div class="member">
+        <img src="https://i.pravatar.cc/150?img=32" alt="팀원 김건도" />
+        <div class="member-name">박건도</div>
+        <div class="member-role">CEO & Founder</div>
+      </div>
+      <div class="member">
+        <img src="https://i.pravatar.cc/150?img=31" alt="팀원 박수빈" />
+        <div class="member-name">박수빈</div>
+        <div class="member-role">Lead Designer</div>
+      </div>
+      <div class="member">
+        <img src="https://i.pravatar.cc/150?img=28" alt="팀원 이지훈" />
+        <div class="member-name">이지훈</div>
+        <div class="member-role">Senior Developer</div>
+      </div>
+      <div class="member">
+        <img src="https://i.pravatar.cc/150?img=26" alt="팀원 최민아" />
+        <div class="member-name">최민아</div>
+        <div class="member-role">Product Manager</div>
+      </div>
+    </div>
+
+    <h2>왜 TemCode를 만들었나요?</h2>
+    <p class="lead">
+      우리는 웹사이트 제작 과정을 간편하고, 누구나 쉽게 접근 가능하도록 만들고자 하고있습니다.<br/>
+      복잡한 코딩과 디자인의 장벽을 낮추고,<br/>
+      고객이 진정으로 원하는 결과물을 빠르고 믿을 수 있게 전달하는 것이 목표입니다.
+    </p>
+
+    <h2>향후 비전 & 로드맵</h2>
+    <div class="vision-list">
+      <div class="vision-item">2025년: AI 기반 맞춤형 웹사이트 자동 제작 도구 출시</div>
+      <div class="vision-item">2026년: 글로벌 서비스 확장 및 다국어 지원 강화</div>
+      <div class="vision-item">2027년: 커뮤니티 기능 도입 및 고객 맞춤형 템플릿 확대</div>
+      <div class="vision-item">2028년: 클라우드 기반 협업 시스템 완성 및 모바일 앱 출시</div>
+    </div>
+
+    <button class="btn-primary" onclick="location.href='index.html'">메인 홈으로 가기</button>
+  </main>
+
+  <footer>
+    © 2025 TemCode. All rights reserved.
+  </footer>
+</body>
+</html>

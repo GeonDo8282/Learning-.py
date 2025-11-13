@@ -1,0 +1,254 @@
+<!--
+💡 완성된 템플릿 UI (Apple 스타일)
+기능 포함:
+1. 파티클 배경 효과
+2. 스크롤 시 페이드업
+3. 타이핑 애니메이션 문구 순환
+4. 배경 음악 & 클릭 사운드
+5. 버튼 클릭 시 물결 효과
+6. 카드 슬라이더 (자동 재생 포함)
+-->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Template Showcase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.4.1/swiper-bundle.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 60px 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SUIT', 'Noto Sans KR', sans-serif;
+      background: #fff;
+      color: #121212;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .swiper {
+      max-width: 760px;
+      margin: auto;
+    }
+
+    .apple-card {
+      border-radius: 24px;
+      overflow: hidden;
+      background: #f9f9f9ee;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+      transition: transform 0.4s ease;
+    }
+    .apple-card:hover {
+      transform: scale(1.01);
+    }
+
+    .apple-image {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .apple-card:hover .apple-image {
+      transform: scale(1.05) rotate(-1deg);
+    }
+
+    .apple-content {
+      padding: 48px;
+      text-align: center;
+    }
+    .apple-title {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .typing-text::after {
+      content: '|';
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .apple-subtitle {
+      font-size: 1.1rem;
+      color: #454545;
+      margin-bottom: 40px;
+    }
+    .apple-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-apple {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-apple::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 200%; height: 200%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      transition: transform 0.5s ease;
+      pointer-events: none;
+    }
+    .btn-apple:active::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .btn-preview { background-color: #eaeaea; color: #121212; }
+    .btn-preview:hover { background-color: #d4d4d4; }
+    .btn-order { background-color: #121212; color: #fff; }
+    .btn-order:hover { background-color: #000; }
+
+    @media (max-width: 768px) {
+      .apple-content { padding: 32px 24px; }
+      .apple-title { font-size: 2rem; }
+      .apple-subtitle { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<audio id="bgm" autoplay loop hidden>
+  <source src="https://cdn.pixabay.com/audio/2023/06/08/audio_2d1cb1c84a.mp3" type="audio/mpeg">
+</audio>
+<audio id="clickSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_185c9837f8.mp3"></audio>
+
+<div id="particles-js"></div>
+
+<div class="swiper fade-up">
+  <div class="swiper-wrapper">
+    <!-- 카드 슬라이드 1 -->
+    <div class="swiper-slide">
+      <div class="apple-card">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/9ba07f96-2ad3-4b20-96ca-84c6c291e3e5/Leonardo_Phoenix_10_Clean_and_minimalistic_product_showcase_im_2.jpg" alt="템플릿1" class="apple-image">
+        <div class="apple-content">
+          <h2 class="apple-title typing-text" id="typingTarget">모던 비즈니스 템플릿</h2>
+          <p class="apple-subtitle">스타트업을 위한 세련된 반응형 UI</p>
+          <div class="apple-buttons">
+            <button class="btn-apple btn-preview" onclick="preview()">미리보기</button>
+            <button class="btn-apple btn-order" onclick="orderNow()">이걸로 주문하기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 카드 슬라이드 2 -->
+    <div class="swiper-slide">
+      <div class="apple-card">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/3dfb470a-bbec-4ca6-ac0a-6b7a6e722e1f/Leonardo_Phoenix_10_a_cute_and_professional_UIstyle_promotiona_2.jpg" alt="템플릿2" class="apple-image">
+        <div class="apple-content">
+          <h2 class="apple-title">포트폴리오 템플릿</h2>
+          <p class="apple-subtitle">디자이너와 크리에이터를 위한 개인 소개 페이지</p>
+          <div class="apple-buttons">
+            <button class="btn-apple btn-preview" onclick="preview()">미리보기</button>
+            <button class="btn-apple btn-order" onclick="orderNow()">이걸로 주문하기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.4.1/swiper-bundle.min.js"></script>
+<script>
+// 파티클 효과
+particlesJS('particles-js', {
+  particles: {
+    number: { value: 100 },
+    color: { value: "#00b3ff" },
+    shape: { type: "circle" },
+    opacity: { value: 0.3 },
+    size: { value: 4 },
+    move: { enable: true, speed: 1.2 }
+  },
+  interactivity: {
+    events: { onhover: { enable: true, mode: "repulse" } }
+  }
+});
+
+// 스크롤 페이드업
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// 타이핑 애니메이션
+const phrases = ["모던 비즈니스 템플릿", "반응형 올인원 솔루션", "스타트업 전용 템플릿"];
+let index = 0;
+const target = document.getElementById("typingTarget");
+function typeText(text, i = 0) {
+  if (i <= text.length) {
+    target.textContent = text.slice(0, i);
+    setTimeout(() => typeText(text, i + 1), 90);
+  } else {
+    setTimeout(() => eraseText(text.length), 1500);
+  }
+}
+function eraseText(i) {
+  if (i >= 0) {
+    target.textContent = target.textContent.slice(0, i);
+    setTimeout(() => eraseText(i - 1), 40);
+  } else {
+    index = (index + 1) % phrases.length;
+    typeText(phrases[index]);
+  }
+}
+typeText(phrases[index]);
+
+// 슬라이더
+new Swiper('.swiper', {
+  loop: true,
+  autoplay: {
+    delay: 5000,
+    disableOnInteraction: false
+  },
+});
+
+// 버튼 클릭 시 사운드
+function playClickSound() {
+  document.getElementById('clickSound').play();
+}
+function preview() {
+  playClickSound();
+  window.open('https://example.com/demo', '_blank');
+}
+function orderNow() {
+  playClickSound();
+  window.location.href = 'order.html?template=modern-business';
+}
+</script>
+</body>
+</html>
+

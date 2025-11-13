@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>템플릿 갤러리 / 데모 보기 | TemCode</title>
+  <style>
+    /* Reset & 기본 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #fff;
+      color: #121212;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a {
+      color: #3a7bfd;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: #3a7bfd;
+      color: #fff;
+      padding: 0.6em 1.2em;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background 0.25s ease;
+    }
+    button:hover {
+      background: #265edc;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* 헤더 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #121212;
+      margin: 0;
+    }
+    nav a {
+      margin-left: 1.5rem;
+      font-weight: 500;
+      font-size: 1rem;
+      color: #454545;
+    }
+    nav a:hover {
+      color: #3a7bfd;
+    }
+
+    /* 상단 설명 */
+    .intro {
+      margin: 2rem 0 3rem 0;
+      text-align: center;
+    }
+    .intro h2 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #121212;
+    }
+    .intro p {
+      font-size: 1.1rem;
+      color: #454545;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* 갤러리 그리드 */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 2rem;
+    }
+
+    /* 카드 스타일 */
+    .card {
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgb(58 123 253 / 0.15);
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 8px 20px rgb(58 123 253 / 0.35);
+      transform: translateY(-6px);
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid #eee;
+    }
+
+    .card-content {
+      padding: 1rem 1.25rem 1.5rem 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin: 0 0 0.5rem 0;
+      color: #121212;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: #666;
+      flex-grow: 1;
+      line-height: 1.4;
+      margin-bottom: 1.25rem;
+    }
+    .card-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .btn-demo {
+      flex: 1;
+      background: #fff;
+      color: #3a7bfd;
+      border: 2px solid #3a7bfd;
+      font-weight: 600;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .btn-demo:hover {
+      background: #3a7bfd;
+      color: #fff;
+    }
+    .btn-order {
+      flex: 1;
+    }
+
+    /* 반응형 하단 여백 */
+    @media(max-width: 600px) {
+      .intro h2 {
+        font-size: 1.5rem;
+      }
+      .card-buttons {
+        flex-direction: column;
+      }
+      .btn-demo, .btn-order {
+        width: 100%;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="container" role="banner">
+    <h1>TemCode 템플릿 갤러리</h1>
+    <nav aria-label="주요 내비게이션">
+      <a href="index.html" aria-label="홈으로 이동">홈</a>
+      <a href="order.html" aria-label="주문 페이지로 이동">주문하기</a>
+      <a href="Check.html" aria-label="상태 페이지로 이동">상태확인</a>
+    </nav>
+  </header>
+
+  <main class="container" role="main">
+    <section class="intro" aria-labelledby="intro-title">
+      <h2 id="intro-title">이런 웹사이트를 쉽게 만들 수 있어요</h2>
+      <p>
+        다양한 템플릿 데모를 보고, 원하는 스타일을 선택한 뒤 간편하게 주문하세요.<br/>
+        TemCode가 여러분의 아이디어를 빠르고 정확하게 구현해 드립니다.
+      </p>
+    </section>
+
+    <section class="gallery" aria-label="템플릿 갤러리">
+      <!-- 템플릿 카드 반복 시작 -->
+      <article class="card" tabindex="0" aria-labelledby="template1-title" role="region">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/27f0e7ea-6241-4b1c-8f25-c4e322385e61/Leonardo_Phoenix_10_A_clean_and_modern_product_portfolio_heade_3.jpg" alt="모던 포트폴리오 템플릿 썸네일" />
+        <div class="card-content">
+          <h3 class="card-title" id="template1-title">모던 포트폴리오</h3>
+          <p class="card-desc">깔끔하고 현대적인 개인 포트폴리오 웹사이트 템플릿입니다.</p>
+          <div class="card-buttons">
+            <button class="btn-demo" onclick="window.open('Preview.html', 'Preview')" aria-label="모던 포트폴리오 템플릿 미리보기">미리보기</button>
+            <button class="btn-order" onclick="location.href='order.html?template=modern-portfolio'">이걸로 주문하기</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" aria-labelledby="Preview.html" role="Preview">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/9ba07f96-2ad3-4b20-96ca-84c6c291e3e5/Leonardo_Phoenix_10_Clean_and_minimalistic_product_showcase_im_1.jpg" alt="블로그 템플릿 썸네일" />
+        <div class="card-content">
+          <h3 class="card-title" id="template2-title">심플 블로그</h3>
+          <p class="card-desc">깔끔하고 가독성 좋은 개인 및 취미 블로그 템플릿입니다.</p>
+          <div class="card-buttons">
+            <button class="btn-demo" onclick="window.open('Preview.html', 'Preview')" aria-label="심플 블로그 템플릿 미리보기">미리보기</button>
+            <button class="btn-order" onclick="location.href='order.html?template=simple-blog'">이걸로 주문하기</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" tabindex="0" aria-labelledby="Preview.html" role="Preview">
+        <img src="https://cdn.leonardo.ai/users/1c867b06-ba72-4d4f-aedf-4221a07f7a75/generations/27f0e7ea-6241-4b1c-8f25-c4e322385e61/Leonardo_Phoenix_10_A_clean_and_modern_product_portfolio_heade_0.jpg" alt="브랜드 소개 템플릿 썸네일" />
+        <div class="card-content">
+          <h3 class="card-title" id="template3-title">브랜드 소개</h3>
+          <p class="card-desc">신뢰감을 주는 브랜드 소개 및 비즈니스 홈페이지 템플릿입니다.</p>
+          <div class="card-buttons">
+            <button class="btn-demo" onclick="window.open('Preview.html', 'Preview')" aria-label="브랜드 소개 템플릿 미리보기">미리보기</button>
+            <button class="btn-order" onclick="location.href='order.html?template=brand-intro'">이걸로 주문하기</button>
+          </div>
+        </div>
+      </article>
+      <!-- 템플릿 카드 반복 끝 -->
+    </section>
+  </main>
+</body>
+</html>

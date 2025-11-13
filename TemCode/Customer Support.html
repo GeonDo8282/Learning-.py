@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TemCode 1:1 문의</title>
+      <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='0' y='52' font-size='52'%3E💼%3C/text%3E%3C/svg%3E" />
+
+  <!-- 폰트: SUIT + Noto Sans KR -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=SUIT:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <!-- FontAwesome (무료 아이콘) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-pVUxRroEZV1mZhC9sdFZhJ1X+gZ1p/mkaNyRkzIqNqcKzV7Yvy79H/VF7hXzCjBzjJ5M+EZ4L+OER3Gsm3/v9A=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0; padding: 0;
+      font-family: 'SUIT', 'Noto Sans KR', sans-serif;
+      background-color: #fff;
+      color: #121212;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px 80px;
+    }
+
+    /* 컨테이너: 좌우 넓게, 최대 700px, 가운데 정렬 */
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 12px 28px rgba(58,123,253,0.12);
+      padding: 48px 40px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 제목 */
+    h1 {
+      font-weight: 700;
+      font-size: 2.4rem;
+      color: #3a7bfd;
+      margin-bottom: 32px;
+      user-select: none;
+    }
+
+    /* 폼 스타일 */
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #3a7bfd;
+      margin-bottom: 8px;
+      user-select: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      border-radius: 14px;
+      border: 1.8px solid #d6defa;
+      font-size: 1.1rem;
+      color: #121212;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      resize: vertical;
+      font-weight: 500;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    textarea:focus {
+      border-color: #3a7bfd;
+      outline: none;
+      box-shadow: 0 0 10px rgba(58, 123, 253, 0.3);
+    }
+    textarea {
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    /* 버튼 스타일 */
+    button {
+      background-color: #3a7bfd;
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+      padding: 16px 0;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(58,123,253,0.3);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    button:hover,
+    button:focus {
+      background-color: #2f5ecc;
+      box-shadow: 0 12px 28px rgba(47,94,203,0.5);
+      outline: none;
+    }
+    button:active {
+      background-color: #2650aa;
+    }
+
+    /* 상태 메시지 */
+    .status-message {
+      margin-top: 24px;
+      text-align: center;
+      font-weight: 600;
+      min-height: 28px;
+      user-select: none;
+      font-size: 1rem;
+    }
+    .status-success {
+      color: #2ecc71;
+    }
+    .status-error {
+      color: #e74c3c;
+    }
+
+    /* 문의처 및 SNS 버튼 영역 */
+    .contact-sns {
+      margin-top: 48px;
+      width: 100%;
+      border-top: 1px solid #e2e6f7;
+      padding-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .contact-info {
+      font-size: 0.95rem;
+      color: #454545;
+      user-select: text;
+    }
+
+    /* SNS 버튼 스타일 */
+    .sns-buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .sns-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f5f7ff;
+      border-radius: 14px;
+      box-shadow: 0 3px 8px rgba(58,123,253,0.15);
+      width: 44px;
+      height: 44px;
+      color: #3a7bfd;
+      text-decoration: none;
+      font-size: 1.3rem;
+      transition: background-color 0.25s, color 0.25s;
+    }
+    .sns-button:hover,
+    .sns-button:focus {
+      background-color: #3a7bfd;
+      color: white;
+      outline: none;
+    }
+
+    /* 접근성 - 키보드 포커스 강조 */
+    a.sns-button:focus,
+    button:focus,
+    input:focus,
+    textarea:focus {
+      outline: 3px solid #3a7bfd;
+      outline-offset: 2px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 480px) {
+      .container {
+        padding: 32px 24px 48px;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+      }
+      .contact-sns {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-label="TemCode 1대1 문의">
+    <h1>TemCode 1:1 문의</h1>
+    <form id="contactForm" novalidate>
+      <label for="name">이름</label>
+      <input type="text" id="name" name="name" placeholder="이름을 입력해 주세요" required autocomplete="name" />
+
+      <label for="email">이메일</label>
+      <input type="email" id="email" name="email" placeholder="example@email.com" required autocomplete="email" />
+
+      <label for="subject">문의 제목</label>
+      <input type="text" id="subject" name="subject" placeholder="문의 제목을 입력해 주세요" required />
+
+      <label for="message">문의 내용</label>
+      <textarea id="message" name="message" placeholder="문의 내용을 상세히 작성해 주세요" required></textarea>
+
+      <button type="submit" aria-label="문의 내용 전송">문의 보내기</button>
+      <div id="statusMessage" class="status-message" role="alert" aria-live="polite"></div>
+      
+      <!-- 문의처 및 SNS 버튼 -->
+      <section class="contact-sns" aria-label="문의처 및 SNS 링크">
+        <div class="contact-info" aria-label="문의처 이메일 및 연락처">
+          <p>📧 <a href="mailto:kjhiuyfddst5432@gmail.com" style="color:#3a7bfd; text-decoration:none;">kjhiuyfddst5432@gmail.com</a></p>
+        </div>
+        <div class="sns-buttons">
+          <a href="https://discord.gg/V4T4MKerGj" target="_blank" class="sns-button" aria-label="디스코드 링크"><i class="fab fa-discord"></i></a>
+          <a href="mailto:kjhiuyfddst5432@gmail.com" class="sns-button" aria-label="이메일 보내기"><i class="fas fa-envelope"></i></a>
+          <a href="https://accounts.google.com" target="_blank" class="sns-button" aria-label="구글 계정 링크"><i class="fab fa-google"></i></a>
+          <a href="https://twitter.com" target="_blank" class="sns-button" aria-label="트위터 링크"><i class="fab fa-twitter"></i></a>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <script>
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1402175755412049982/JbkHimrLqr_Z9df8lQgDR7KVk5x_FPFR8oVAkoWa31mYjWSyO25noc8CZtY0daHPjQQ3";
+
+    const form = document.getElementById('contactForm');
+    const statusMessage = document.getElementById('statusMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const subject = form.subject.value.trim();
+      const message = form.message.value.trim();
+
+      if (!name || !email || !subject || !message) {
+        statusMessage.textContent = "모든 필드를 정확히 입력해 주세요.";
+        statusMessage.className = "status-message status-error";
+        return;
+      }
+
+      statusMessage.textContent = "문의 내용을 전송 중입니다...";
+      statusMessage.className = "status-message";
+
+      const payload = {
+        embeds: [{
+          title: `📝 1:1 문의 - ${subject}`,
+          color: 3447003,
+          fields: [
+            { name: "이름", value: name, inline: true },
+            { name: "이메일", value: email, inline: true },
+            { name: "문의 내용", value: message }
+          ],
+          timestamp: new Date().toISOString(),
+          footer: { text: "TemCode 문의 시스템" }
+        }]
+      };
+
+      try {
+        const res = await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          statusMessage.textContent = "문의가 성공적으로 전송되었습니다. 빠른 시일 내에 답변 드리겠습니다.";
+          statusMessage.className = "status-message status-success";
+          form.reset();
+        } else {
+          throw new Error(`전송 실패: ${res.status}`);
+        }
+      } catch (error) {
+        statusMessage.textContent = "문의 전송 중 오류가 발생했습니다. 다시 시도해 주세요.";
+        statusMessage.className = "status-message status-error";
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>

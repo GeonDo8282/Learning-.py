@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>결제 페이지 | TemCode</title>
+      <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='0' y='52' font-size='52'%3E💶%3C/text%3E%3C/svg%3E" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://js.tosspayments.com/v1/payment-widget"></script>
+
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+        'Helvetica Neue', 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0; padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      max-width: 460px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      position: relative;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    h1 {
+      color: #00c471; /* 토스 그린 */
+      font-weight: 900;
+      font-size: 2.4rem;
+      margin-bottom: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .coupon-box {
+      margin: 20px 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    #coupon-box {
+      width: 20px;
+      height: 20px;
+      accent-color: #00c471;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #coupon-box:hover {
+      transform: scale(1.2);
+    }
+
+    #payment-method {
+      margin-bottom: 30px;
+    }
+
+    #agreement {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 32px;
+      user-select: none;
+    }
+
+    #payment-button {
+      background-color: #00c471;
+      color: white;
+      font-weight: 800;
+      font-size: 1.3rem;
+      padding: 16px 0;
+      width: 100%;
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 196, 113, 0.4);
+      transition: background-color 0.3s ease, box-shadow 0.4s ease;
+      user-select: none;
+    }
+    #payment-button:hover:not(:disabled) {
+      background-color: #00af5b;
+      box-shadow: 0 14px 40px rgba(0, 175, 91, 0.6);
+    }
+    #payment-button:disabled {
+      background-color: #a7d9be;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #00c471;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 30px auto 0;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-label="결제 페이지">
+    <h1>✨ 나만의 웹사이트 완성하기</h1>
+
+    <div class="coupon-box">
+      <input type="checkbox" id="coupon-box" aria-label="5,000원 쿠폰 적용" />
+      <label for="coupon-box">5,000원 쿠폰 적용</label>
+    </div>
+
+    <div id="payment-method" aria-label="결제 수단 선택 영역"></div>
+    <div id="agreement" aria-label="이용 약관 동의"></div>
+
+    <button id="payment-button" aria-live="polite" aria-busy="false">결제하기</button>
+    <div class="loader" role="status" aria-live="polite" aria-label="로딩 중"></div>
+  </main>
+
+  <script>
+    const coupon = document.getElementById("coupon-box");
+    const button = document.getElementById("payment-button");
+    const loader = document.querySelector(".loader");
+    const amountBase = 50000; // 기본 결제금액 (예시)
+
+    // 회원 고유 키 (테스트키)
+    const widgetClientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+    const customerKey = "KbT1wLnnUnHA29uaDLShC";
+
+    const paymentWidget = PaymentWidget(widgetClientKey, customerKey);
+    const paymentMethodWidget = paymentWidget.renderPaymentMethods(
+      "#payment-method",
+      { value: amountBase },
+      { variantKey: "DEFAULT" }
+    );
+
+    paymentWidget.renderAgreement(
+      "#agreement",
+      { variantKey: "AGREEMENT" }
+    );
+
+    coupon.addEventListener("change", () => {
+      if (coupon.checked) {
+        paymentMethodWidget.updateAmount(amountBase - 5000);
+      } else {
+        paymentMethodWidget.updateAmount(amountBase);
+      }
+    });
+
+    button.addEventListener("click", () => {
+      button.disabled = true;
+      loader.style.display = "block";
+      button.setAttribute("aria-busy", "true");
+
+      paymentWidget.requestPayment({
+        orderId: "DxL3aKcYGHKTeZQPKshpy",
+        orderName: "TemCode 나만의 웹사이트",
+        successUrl: window.location.origin + "/success",
+        failUrl: window.location.origin + "/fail",
+        customerEmail: "customer123@gmail.com",
+        customerName: "박건도",
+        customerMobilePhone: "01012341234",
+      });
+    });
+  </script>
+</body>
+</html>

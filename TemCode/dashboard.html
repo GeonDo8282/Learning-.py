@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>대시보드 | TemCode</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap');
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      background: #f9fafb;
+      color: #121212;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #3a7bfd;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(58,127,253,0.3);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    header button {
+      background: white;
+      color: #3a7bfd;
+      border: none;
+      padding: 8px 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    header button:hover {
+      background-color: #e6f0ff;
+    }
+    main {
+      flex: 1;
+      padding: 40px 32px;
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .welcome {
+      font-size: 1.25rem;
+      margin-bottom: 20px;
+    }
+    .content-box {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(58,127,253,0.1);
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      header, main {
+        padding: 16px;
+      }
+      .welcome {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TemCode 대시보드</h1>
+    <button id="logoutBtn">로그아웃</button>
+  </header>
+
+  <main>
+    <div class="welcome" id="welcomeText">환영합니다, 사용자님!</div>
+
+    <div class="content-box">
+      <h2>내 정보</h2>
+      <p>여기에 회원님의 정보를 표시할 수 있습니다.</p>
+      <ul>
+        <li>이메일: <span id="userEmail"></span></li>
+        <li>가입일: 2024-01-01 (예시)</li>
+      </ul>
+    </div>
+
+    <div class="content-box">
+      <h2>서비스 안내</h2>
+      <p>TemCode에서 제공하는 다양한 서비스를 경험해보세요.</p>
+    </div>
+  </main>
+
+  <script>
+    const userEmail = localStorage.getItem('userEmail');
+    const userEmailSpan = document.getElementById('userEmail');
+    const welcomeText = document.getElementById('welcomeText');
+
+    if(userEmail) {
+      userEmailSpan.textContent = userEmail;
+      welcomeText.textContent = `${userEmail}님, 환영합니다!`;
+    } else {
+      // 로그인 정보 없으면 로그인 페이지로 이동
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('userEmail');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

@@ -45,5 +45,5 @@ TemCode는 단순한 웹사이트 템플릿을 넘어,
 ---
 
 ## 👨‍💻 제작자
-**Made by [HangoK001724](https://github.com/HangoK001724)**  
+**Made by [GeonDo](https://github.com/GeonDo8282)**  
 © 2025 TemCode. All rights reserved.

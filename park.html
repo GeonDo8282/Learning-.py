@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나무장터 - Tree Market</title>
+    
+    <!-- 1. 외부 라이브러리 연결 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Toss Payments SDK -->
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+
+        @keyframes toastSlide {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: toastSlide 0.3s ease-out forwards; }
+
+        .image-preview {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.3s;
+        }
+        
+        /* 멤버십 골드 그라데이션 */
+        .bg-gold-gradient {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #D97706 100%);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 pb-20 md:pb-0 relative min-h-screen flex flex-col">
+
+    <!-- 2. HTML 컨테이너 -->
+    <div id="app" class="flex flex-col flex-grow w-full"></div>
+    <div id="modals"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 3. 자바스크립트 시스템 로직 -->
+    <script>
+        // --- [System] 데이터 영구 저장소 ---
+        const StorageSystem = {
+            KEY: 'treeMarket_v7_toss', 
+            save: (data) => {
+                try {
+                    const { isGenerating, showAIChat, modals, activeTab, ...saveData } = data; 
+                    saveData.sellForm = defaultState.sellForm; 
+                    localStorage.setItem(StorageSystem.KEY, JSON.stringify(saveData));
+                } catch (e) { console.error('저장 실패:', e); }
+            },
+            load: () => {
+                try {
+                    const data = localStorage.getItem(StorageSystem.KEY);
+                    return data ? JSON.parse(data) : null;
+                } catch (e) { return null; }
+            },
+            clear: () => localStorage.removeItem(StorageSystem.KEY)
+        };
+
+        // --- [System] 토스트 알림 ---
+        const Toast = {
+            show: (message, type = 'success') => {
+                const container = document.getElementById('toast-container');
+                const el = document.createElement('div');
+                let bgClass, icon;
+                
+                if (type === 'success') { bgClass = 'bg-green-700'; icon = 'check-circle'; }
+                else if (type === 'error') { bgClass = 'bg-red-600'; icon = 'alert-circle'; }
+                else if (type === 'gold') { bgClass = 'bg-gold-gradient'; icon = 'crown'; } 
+                else { bgClass = 'bg-stone-800'; icon = 'info'; }
+
+                el.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 min-w-[300px] toast-enter pointer-events-auto`;
+                el.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i><span class="font-medium text-sm">${message}</span>`;
+                
+                container.appendChild(el);
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-10px)';
+                    el.style.transition = 'all 0.3s';
+                    setTimeout(() => el.remove(), 300);
+                }, 3000);
+            }
+        };
+
+        // --- [State] 초기 데이터 ---
+        const defaultState = {
+            activeTab: 'market',
+            isLoggedIn: false,
+            currentUser: null, 
+            searchTerm: '',
+            selectedCategory: '전체',
+            viewFilter: 'all', 
+            showAIChat: false,
+            aiChatInput: '',
+            listings: [
+                { id: 1, name: '에메랄드 그린', category: '조경수', price: 150000, height: '1.5m', location: '충북 옥천군', seller: '김나무', sellerId: 'seller1', isBusiness: true, isPremium: true, businessName: '청정묘목농원', image: 'https://images.unsplash.com/photo-1598335624129-87c2fb28532c?w=400&q=80', status: '판매중' },
+                { id: 2, name: '왕벚나무 R15', category: '관상수', price: 450000, height: '3.0m', location: '경기 용인시', seller: '박조경', sellerId: 'seller2', isBusiness: false, isPremium: false, businessName: '', image: 'https://images.unsplash.com/photo-1524234599372-a5bd0194758d?w=400&q=80', status: '판매중' },
+                { id: 3, name: '반송 (둥근 소나무)', category: '특수목', price: 1200000, height: '1.2m', location: '강원 원주시', seller: '이솔', sellerId: 'seller3', isBusiness: true, isPremium: true, businessName: '솔향기조경', image: 'https://images.unsplash.com/photo-1579624589252-b892a0e2831f?w=400&q=80', status: '판매중' }
+            ],
+            chats: [
+                { id: 1, partnerName: '박조경', lastMessage: '왕벚나무 10주 구매 가능한가요?', time: '방금 전', unread: 2, itemId: 2, messages: [{ id: 1, sender: 'me', text: '안녕하세요, 왕벚나무 보고 연락드립니다.', time: '10:00' }, { id: 2, sender: 'partner', text: '네 안녕하세요!', time: '10:05' }] }
+            ],
+            activeChatId: null,
+            aiChatMessages: [{ role: 'model', text: '안녕하세요! 저는 AI 정원사입니다. 나무에 대해 무엇이든 물어보세요! 🌲' }],
+            sellForm: { name: '', category: '조경수', price: '', height: '', location: '', description: '', isBusiness: false, businessName: '', businessRegNumber: '', previewImage: null },
+            isGenerating: false,
+            modals: { login: false, payment: null, settings: false },
+            tossWidgets: null // 위젯 인스턴스 저장용
+        };
+
+        const loadedData = StorageSystem.load();
+        const state = loadedData ? { ...defaultState, ...loadedData, sellForm: defaultState.sellForm, isGenerating: false, modals: {login:false, payment:null, settings:false}, viewFilter: 'all' } : defaultState;
+
+        // --- [Render] 화면 렌더링 ---
+        function render() {
+            const app = document.getElementById('app');
+            const modals = document.getElementById('modals');
+            
+            app.innerHTML = `
+                ${Header()}
+                <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full">
+                    ${renderActiveTab()}
+                </main>
+                ${FloatingAIButton()}
+                ${MobileNav()}
+                <div class="hidden md:block">${Footer()}</div>
+            `;
+
+            // 모달 렌더링
+            modals.innerHTML = `
+                ${state.modals.login ? LoginModal() : ''}
+                ${state.modals.payment ? PaymentModal(state.modals.payment) : ''}
+                ${state.modals.settings ? SettingsModal() : ''}
+                ${state.showAIChat ? AIChatModal() : ''}
+            `;
+
+            lucide.createIcons();
+            StorageSystem.save(state);
+            
+            // 후속 처리
+            if (state.activeTab === 'chat' && state.activeChatId) scrollChatToBottom('chat-messages');
+            if (state.showAIChat) scrollChatToBottom('ai-chat-messages');
+            
+            // 토스 결제 위젯 렌더링 트리거
+            if (state.modals.payment) {
+                setTimeout(() => renderTossWidget(state.modals.payment), 50); // DOM 렌더링 후 실행
+            }
+        }
+
+        function scrollChatToBottom(id) {
+            const el = document.getElementById(id);
+            if(el) el.scrollTop = el.scrollHeight;
+        }
+
+        function renderActiveTab() {
+            switch(state.activeTab) {
+                case 'market': return MarketTab();
+                case 'chat': return ChatTab();
+                case 'sell': return SellTab();
+                case 'profile': return ProfileTab();
+                default: return MarketTab();
+            }
+        }
+
+        // --- [Components] ---
+
+        const Header = () => `
+            <header class="bg-green-800 text-white shadow-lg sticky top-0 z-20">
+                <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+                    <div class="flex items-center space-x-2 cursor-pointer group" onclick="goHome()">
+                        <i data-lucide="trees" class="text-green-300 w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                        <h1 class="text-xl font-bold tracking-tight">나무장터</h1>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${!state.isLoggedIn ? `
+                            <button onclick="toggleLogin(true)" class="flex items-center px-3 py-1.5 bg-green-900/50 hover:bg-green-900 rounded-lg text-sm transition-colors">
+                                <i data-lucide="log-in" class="w-3.5 h-3.5 mr-1"></i> 로그인
+                            </button>
+                        ` : `
+                            <div class="flex items-center gap-2">
+                                <button onclick="openSettings()" class="flex items-center gap-1.5 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors group">
+                                    <div class="relative">
+                                        <i data-lucide="user" class="w-4 h-4 text-green-200"></i>
+                                        ${state.currentUser.isPremium ? '<div class="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full border border-green-800 animate-pulse"></div>' : ''}
+                                    </div>
+                                    <span class="text-sm text-green-50 hidden md:inline font-bold group-hover:text-white flex items-center gap-1">
+                                        ${state.currentUser.name}님
+                                        ${state.currentUser.isPremium ? '<i data-lucide="crown" class="w-3 h-3 text-yellow-400 fill-yellow-400"></i>' : ''}
+                                    </span>
+                                </button>
+                                <button onclick="logout()" class="p-2 hover:bg-green-700 rounded-lg text-green-200 hover:text-white transition-colors"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </header>
+        `;
+
+        // ... MarketTab, ChatTab, SellTab, ProfileTab, LoginModal, SettingsModal, AIChatModal 등 기존 컴포넌트는 동일하게 유지 ...
+        // (지면 관계상 중복되는 긴 코드는 생략하고 핵심 변경사항인 PaymentModal과 로직에 집중합니다)
+        // 실제 파일에는 이 부분들에 이전에 작성한 코드가 그대로 들어가야 합니다.
+        
+        const MarketTab = () => {
+            const filtered = state.listings.filter(item => {
+                const catMatch = state.selectedCategory === '전체' || item.category === state.selectedCategory;
+                const searchMatch = item.name.includes(state.searchTerm) || item.location.includes(state.searchTerm);
+                const myMatch = state.viewFilter === 'my' ? (state.isLoggedIn && item.sellerId === state.currentUser.id) : true;
+                return catMatch && searchMatch && myMatch;
+            });
+
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    ${state.viewFilter === 'my' ? `
+                        <div class="flex justify-between items-center bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800 flex items-center gap-2"><i data-lucide="store" class="text-green-600"></i> 내 판매글 관리</h3>
+                                <p class="text-stone-500 text-xs mt-1">등록한 상품: ${filtered.length}개</p>
+                            </div>
+                            <button onclick="setViewFilter('all')" class="text-xs bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-stone-600 transition-colors">목록 닫기</button>
+                        </div>
+                        <button onclick="setActiveTab('sell')" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 transform active:scale-95">
+                            <i data-lucide="plus" class="w-5 h-5"></i> 새 판매글 등록하기
+                        </button>
+                    ` : `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+                            <div class="flex gap-2 mb-4">
+                                <div class="relative flex-grow">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5"></i>
+                                    <input type="text" placeholder="어떤 나무를 찾으세요?" 
+                                        class="w-full pl-10 pr-4 py-3 bg-stone-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        value="${state.searchTerm}" oninput="handleSearch(this.value)">
+                                </div>
+                            </div>
+                            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                                ${['전체', '조경수', '관상수', '특수목', '묘목'].map(cat => `
+                                    <button onclick="setCategory('${cat}')" 
+                                        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap border transition-colors ${state.selectedCategory === cat ? 'bg-green-700 text-white border-green-700' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}">
+                                        ${cat}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        ${filtered.length > 0 ? filtered.map(item => `
+                            <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border ${item.isPremium ? 'border-yellow-200 ring-1 ring-yellow-100' : 'border-stone-100'} flex flex-col relative group">
+                                <div class="h-52 bg-stone-200 relative overflow-hidden">
+                                    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                    <div class="absolute top-3 left-3 flex gap-2">
+                                        <span class="bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">${item.category}</span>
+                                        <span class="${item.status === '판매중' ? 'bg-green-600' : 'bg-stone-600'} text-white text-xs px-2 py-1 rounded shadow-sm font-bold">${item.status}</span>
+                                    </div>
+                                    ${item.isBusiness ? '<div class="absolute bottom-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-md flex items-center gap-1"><i data-lucide="building-2" class="w-3 h-3"></i> 사업자</div>' : ''}
+                                    ${item.status === '판매완료' ? '<div class="absolute inset-0 flex items-center justify-center bg-black/30 text-white font-bold text-2xl">판매완료</div>' : ''}
+                                </div>
+                                <div class="p-5 flex-grow flex flex-col">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="text-lg font-bold text-stone-900 truncate flex items-center gap-1">
+                                            ${item.name}
+                                            ${item.isPremium ? '<i data-lucide="crown" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>' : ''}
+                                        </h3>
+                                        <span class="text-green-700 font-bold text-lg whitespace-nowrap">${item.price.toLocaleString()}원</span>
+                                    </div>
+                                    <div class="space-y-1.5 text-sm text-stone-500 mb-4">
+                                        <p class="flex items-center"><i data-lucide="user" class="mr-1.5 w-3.5 h-3.5"></i> ${item.seller} ${item.isPremium ? '<span class="ml-1 text-[10px] bg-yellow-100 text-yellow-700 px-1 rounded border border-yellow-200">Premium</span>' : ''}</p>
+                                        <p class="flex items-center"><i data-lucide="map-pin" class="mr-1.5 w-3.5 h-3.5"></i> ${item.location}</p>
+                                    </div>
+                                    <div class="mt-auto grid grid-cols-2 gap-3">
+                                        ${state.isLoggedIn && item.sellerId === state.currentUser.id ? `
+                                            <button onclick="toggleStatus(${item.id})" class="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg font-bold text-sm transition-colors">
+                                                ${item.status === '판매중' ? '판매완료 처리' : '판매중 처리'}
+                                            </button>
+                                            <button onclick="deleteListing(${item.id})" class="py-2.5 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-bold text-sm transition-colors">삭제하기</button>
+                                        ` : `
+                                            <button onclick="startChat(${item.id})" class="py-2.5 px-3 bg-stone-100 text-stone-700 rounded-lg font-bold text-sm hover:bg-stone-200 flex justify-center items-center"><i data-lucide="message-circle" class="mr-1.5 w-4 h-4"></i> 채팅</button>
+                                            <button onclick="openPayment(${item.id})" class="py-2.5 px-3 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 flex justify-center items-center shadow-md"><i data-lucide="shield-check" class="mr-1.5 w-4 h-4"></i> 안전결제</button>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="col-span-full py-20 text-center text-stone-400 bg-white rounded-2xl border border-stone-100 border-dashed">
+                                <i data-lucide="tree-pine" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
+                                <p>${state.viewFilter === 'my' ? '등록된 판매글이 없습니다.' : '검색 결과가 없습니다.'}</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        };
+
+        const ChatTab = () => {
+            if (!state.isLoggedIn) return LoginRequestUI('채팅');
+            const activeChat = state.chats.find(c => c.id === state.activeChatId);
+
+            return `
+                <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden h-[calc(100vh-140px)] flex animate-fade-in">
+                    <div class="${state.activeChatId ? 'hidden md:block' : 'w-full'} md:w-1/3 border-r border-stone-100 flex flex-col">
+                        <div class="p-4 border-b border-stone-100 font-bold text-lg text-stone-800 flex justify-between items-center">
+                            <span>채팅목록</span>
+                            <span class="text-xs font-normal bg-green-100 text-green-800 px-2 py-1 rounded-full">${state.chats.length}</span>
+                        </div>
+                        <div class="overflow-y-auto flex-1">
+                            ${state.chats.length > 0 ? state.chats.map(chat => `
+                                <div onclick="setActiveChat(${chat.id})" class="p-4 border-b border-stone-50 cursor-pointer hover:bg-stone-50 transition-colors ${state.activeChatId === chat.id ? 'bg-green-50 border-l-4 border-l-green-600' : ''}">
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-bold text-stone-800">${chat.partnerName}</span>
+                                        <span class="text-xs text-stone-400">${chat.time}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-sm text-stone-500 truncate max-w-[80%]">${chat.lastMessage}</p>
+                                        ${chat.unread > 0 ? `<span class="bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">${chat.unread}</span>` : ''}
+                                    </div>
+                                </div>
+                            `).join('') : '<div class="p-4 text-center text-stone-400 text-sm">대화 내역이 없습니다.</div>'}
+                        </div>
+                    </div>
+                    <div class="${!state.activeChatId ? 'hidden md:flex' : 'w-full'} md:w-2/3 flex flex-col bg-stone-50">
+                        ${state.activeChatId ? `
+                            <div class="p-4 bg-white border-b border-stone-100 flex items-center justify-between shadow-sm z-10">
+                                <div class="flex items-center">
+                                    <button onclick="setActiveChat(null)" class="md:hidden mr-3 text-stone-400"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                                    <div class="font-bold text-lg">${activeChat.partnerName}</div>
+                                </div>
+                            </div>
+                            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                                ${activeChat.messages.map(msg => `
+                                    <div class="flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}">
+                                        <div class="max-w-[70%] p-3 rounded-2xl text-sm ${msg.sender === 'me' ? 'bg-green-600 text-white rounded-tr-none shadow-md' : 'bg-white border border-stone-200 text-stone-800 rounded-tl-none shadow-sm'}">
+                                            ${msg.text}
+                                        </div>
+                                        <span class="text-[10px] text-stone-300 self-end ml-1 mr-1 mb-1">${msg.time}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <form onsubmit="event.preventDefault(); sendMessage(this.msg.value, this.msg);" class="p-3 bg-white border-t border-stone-200 flex gap-2">
+                                <input name="msg" type="text" placeholder="메시지 입력..." class="flex-1 p-3 bg-stone-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-green-500">
+                                <button type="submit" class="p-3 bg-green-700 text-white rounded-xl hover:bg-green-800 transition-colors"><i data-lucide="send" class="w-5 h-5"></i></button>
+                            </form>
+                        ` : `<div class="flex-1 flex items-center justify-center text-stone-400 flex-col"><i data-lucide="message-circle" class="w-16 h-16 mb-4 opacity-10"></i><p>채팅 대상을 선택하세요</p></div>`}
+                    </div>
+                </div>
+            `;
+        };
+
+        const SellTab = () => {
+            if (!state.isLoggedIn) return LoginRequestUI('판매 등록');
+            return `
+                <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-stone-200 animate-fade-in">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="plus" class="mr-2 text-green-600"></i> 내 나무 판매 등록</h2>
+                    
+                    <div class="mb-6 p-4 ${state.currentUser.isPremium ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-100'} border rounded-xl flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onclick="openSettings()">
+                         <div class="bg-white p-2 rounded-full shadow-sm relative">
+                            <i data-lucide="user" class="${state.currentUser.isPremium ? 'text-yellow-600' : 'text-green-600'} w-5 h-5"></i>
+                            ${state.currentUser.isPremium ? '<div class="absolute -top-1 -right-1"><i data-lucide="crown" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i></div>' : ''}
+                         </div>
+                         <div class="flex-1">
+                            <p class="text-xs text-stone-500">판매자명 (설정에서 변경)</p>
+                            <p class="font-bold text-stone-900 flex items-center gap-1">
+                                ${state.currentUser.name} 
+                                ${state.currentUser.isPremium ? '<span class="text-[10px] bg-yellow-400 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">PREMIUM</span>' : ''}
+                                <i data-lucide="edit-2" class="w-3 h-3 text-stone-400"></i>
+                            </p>
+                         </div>
+                    </div>
+
+                    <form onsubmit="handleSellSubmit(event)" class="space-y-6">
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" onchange="updateSellForm('isBusiness', this.checked)" ${state.sellForm.isBusiness ? 'checked' : ''} class="w-5 h-5 text-green-600 rounded">
+                                <span class="font-bold">사업자 판매자인가요?</span>
+                            </label>
+                            ${state.sellForm.isBusiness ? `
+                                <div class="grid grid-cols-2 gap-4 mt-4 animate-slide-down">
+                                    <input oninput="updateSellForm('businessName', this.value)" value="${state.sellForm.businessName}" placeholder="상호명" class="p-2.5 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                                    <input oninput="updateSellForm('businessRegNumber', this.value)" value="${state.sellForm.businessRegNumber}" placeholder="사업자번호" class="p-2.5 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                                </div>` : ''}
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-stone-600">나무 이름</label>
+                            <input required oninput="updateSellForm('name', this.value)" value="${state.sellForm.name}" placeholder="예: 소나무 2년생" class="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-stone-600">카테고리</label>
+                                <select onchange="updateSellForm('category', this.value)" class="p-3 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                                    ${['조경수', '관상수', '특수목', '묘목'].map(c => `<option value="${c}" ${state.sellForm.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-stone-600">가격</label>
+                                <input required type="number" oninput="updateSellForm('price', this.value)" value="${state.sellForm.price}" placeholder="원" class="p-3 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-stone-600">규격</label>
+                                <input required oninput="updateSellForm('height', this.value)" value="${state.sellForm.height}" placeholder="예: 2m, R15" class="p-3 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-stone-600">위치</label>
+                                <input required oninput="updateSellForm('location', this.value)" value="${state.sellForm.location}" placeholder="예: 강원도 홍천" class="p-3 border rounded-lg w-full outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-sm font-medium text-stone-600">상세 설명</label>
+                                <button type="button" onclick="generateDescription()" ${state.isGenerating ? 'disabled' : ''} class="text-xs flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 shadow-sm">
+                                    <i data-lucide="sparkles" class="w-3 h-3"></i> ${state.isGenerating ? 'AI 작성 중...' : 'AI 자동작성'}
+                                </button>
+                            </div>
+                            <textarea required rows="5" oninput="updateSellForm('description', this.value)" placeholder="나무의 특징, 수형, 관리 상태 등을 자세히 적어주세요." class="w-full p-3 border rounded-lg resize-none outline-none focus:ring-2 focus:ring-green-500">${state.sellForm.description}</textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-stone-600">사진 등록</label>
+                            <div class="relative w-full h-56 border-2 border-dashed border-stone-300 rounded-xl overflow-hidden cursor-pointer hover:bg-stone-50 transition-colors group" onclick="document.getElementById('fileInput').click()">
+                                ${state.sellForm.previewImage ? `
+                                    <div class="w-full h-full image-preview" style="background-image: url('${state.sellForm.previewImage}');"></div>
+                                    <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <i data-lucide="refresh-cw" class="text-white w-8 h-8 mb-2"></i>
+                                        <p class="text-white font-bold text-sm">사진 변경하기</p>
+                                    </div>
+                                ` : `
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
+                                        <i data-lucide="camera" class="w-10 h-10 mb-3 opacity-50"></i>
+                                        <p class="text-sm font-medium">클릭하여 사진 업로드</p>
+                                        <p class="text-xs mt-1 text-stone-300">최대 5MB, JPG/PNG</p>
+                                    </div>
+                                `}
+                                <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleImageUpload(this)">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 bg-green-700 text-white rounded-xl font-bold hover:bg-green-800 shadow-lg transition-transform active:scale-95">판매글 등록하기</button>
+                    </form>
+                </div>
+            `;
+        };
+
+        const ProfileTab = () => {
+            if (!state.isLoggedIn) return LoginRequestUI('내 정보');
+            const myListingCount = state.listings.filter(i => i.sellerId === state.currentUser.id).length;
+            
+            return `
+                <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-stone-200 animate-fade-in overflow-hidden">
+                    <div class="${state.currentUser.isPremium ? 'bg-gold-gradient' : 'bg-green-800'} text-white p-8 pb-16 relative transition-colors duration-500">
+                        <button onclick="openSettings()" class="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"><i data-lucide="settings" class="w-5 h-5"></i></button>
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold backdrop-blur-md border-2 border-white/30 cursor-pointer" onclick="openSettings()">${state.currentUser.name[0]}</div>
+                                ${state.currentUser.isPremium ? '<div class="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1 border-2 border-white"><i data-lucide="crown" class="w-4 h-4 fill-white"></i></div>' : ''}
+                            </div>
+                            <div onclick="openSettings()" class="cursor-pointer group">
+                                <h2 class="text-2xl font-bold flex items-center gap-2">${state.currentUser.name} <i data-lucide="edit-3" class="w-4 h-4 opacity-50 group-hover:opacity-100"></i></h2>
+                                <p class="text-white/80 text-sm">${state.currentUser.email}</p>
+                                <div class="mt-2 inline-flex items-center px-2 py-1 bg-black/20 rounded text-xs">
+                                    ${state.currentUser.isPremium ? '<span class="font-bold text-yellow-100 flex items-center gap-1"><i data-lucide="star" class="w-3 h-3 fill-current"></i> Premium Member</span>' : '<span class="flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3"></i> 일반 회원</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 -mt-10 mb-6">
+                        <div class="bg-white rounded-xl shadow-md p-6 grid grid-cols-3 gap-4 text-center border border-stone-100">
+                            <div onclick="setViewFilter('my')" class="cursor-pointer hover:bg-stone-50 rounded-lg p-1 transition-colors">
+                                <p class="text-xl font-bold text-green-700">${myListingCount}</p>
+                                <p class="text-xs text-stone-500">판매중</p>
+                            </div>
+                            <div class="border-x"><p class="text-xl font-bold">0</p><p class="text-xs text-stone-500">구매내역</p></div>
+                            <div><p class="text-xl font-bold">0</p><p class="text-xs text-stone-500">관심목록</p></div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 mb-6">
+                        <div class="relative rounded-2xl overflow-hidden shadow-lg group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
+                            ${state.currentUser.isPremium ? `
+                                <div class="relative p-6 text-white overflow-hidden">
+                                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 class="font-bold text-xl text-yellow-400 flex items-center gap-2"><i data-lucide="crown" class="w-5 h-5 fill-current"></i> 나무 패스 (Premium)</h3>
+                                            <p class="text-xs text-gray-400 mt-1">모든 프리미엄 혜택 이용 중</p>
+                                        </div>
+                                        <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">ACTIVE</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-300">
+                                        <p class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-green-400"></i> 판매 수수료 0원</p>
+                                        <p class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-green-400"></i> 골드 배지 장착</p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="relative p-6 text-white">
+                                    <div class="absolute inset-0 bg-gold-gradient opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="crown" class="w-5 h-5 text-yellow-400"></i> 나무 패스</h3>
+                                        <span class="text-xs bg-white/10 px-2 py-1 rounded">월 4,900원</span>
+                                    </div>
+                                    <p class="text-sm text-gray-300 mb-4">판매 수수료 0원, 판매글 강조, 골드 배지 등<br>프리미엄 혜택을 누려보세요!</p>
+                                    <button onclick="upgradeMembership()" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold rounded-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i> 나무 패스 시작하기
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-10 space-y-2">
+                        <button onclick="setViewFilter('my')" class="w-full flex justify-between items-center p-4 bg-stone-50 hover:bg-stone-100 rounded-xl text-left font-medium transition-colors">
+                            <span class="flex items-center gap-2"><i data-lucide="list" class="w-4 h-4 text-stone-500"></i> 내 판매글 관리</span> 
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
+                        </button>
+                        <button onclick="openSettings()" class="w-full flex justify-between items-center p-4 bg-stone-50 hover:bg-stone-100 rounded-xl text-left font-medium mt-2">
+                            <span class="flex items-center gap-2"><i data-lucide="user-cog" class="w-4 h-4 text-stone-500"></i> 내 정보 / 닉네임 수정</span> 
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
+                        </button>
+                        <button onclick="logout()" class="w-full flex justify-between items-center p-4 bg-red-50 hover:bg-red-100 rounded-xl text-left font-bold text-red-500 mt-4">
+                            로그아웃 <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+
+        const LoginRequestUI = (featureName = '이 기능') => `
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 text-center animate-fade-in py-20">
+                <div class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="lock" class="text-stone-300 w-10 h-10"></i>
+                </div>
+                <h2 class="text-xl font-bold mb-2">로그인이 필요합니다</h2>
+                <p class="text-stone-500 mb-8">${featureName}을(를) 이용하시려면 로그인해주세요.</p>
+                <button onclick="toggleLogin(true)" class="px-8 py-3 bg-green-700 text-white rounded-xl font-bold hover:bg-green-800 transition-colors shadow-lg">로그인 / 회원가입</button>
+            </div>
+        `;
+
+        const FloatingAIButton = () => `
+            <button onclick="toggleAIChat(true)" class="fixed bottom-24 right-4 md:right-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white p-4 rounded-full shadow-lg z-30 transition-all hover:scale-110 flex items-center justify-center group">
+                <i data-lucide="bot" class="w-7 h-7 group-hover:rotate-12 transition-transform"></i>
+                <span class="absolute right-full mr-3 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">AI 정원사</span>
+            </button>
+        `;
+
+        const MobileNav = () => `
+            <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-6 py-2 z-30 flex justify-between items-center text-xs text-stone-500 font-medium pb-safe">
+                ${['market:home:홈', 'chat:message-circle:채팅', 'sell:plus:판매', 'profile:user-circle:내정보'].map(item => {
+                    const [key, icon, label] = item.split(':');
+                    const isActive = state.activeTab === key;
+                    return `<button onclick="goTab('${key}')" class="flex flex-col items-center p-2 transition-colors ${isActive ? 'text-green-700' : 'hover:text-stone-800'}">
+                        <i data-lucide="${icon}" class="mb-1 w-6 h-6 ${isActive ? 'fill-current' : ''}"></i> ${label}
+                    </button>`;
+                }).join('')}
+            </nav>
+        `;
+
+        const Footer = () => `
+            <footer class="bg-stone-900 text-stone-400 py-12 px-6 mt-12 text-xs">
+                <div class="max-w-4xl mx-auto">
+                    <div class="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h4 class="text-white font-bold mb-4 text-sm">나무장터</h4>
+                            <p class="mb-1">대표: 박건도, 이승민 | 사업자번호: 123-45-67890</p>
+                            <p>주소: 광양시 숲세권 1번지</p>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4 text-sm">고객센터</h4>
+                            <p class="text-lg font-bold text-white mb-1">3883-4395</p>
+                            <p>평일 09:00 - 18:00</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-stone-800 pt-6 text-center">
+                        <p class="mb-2">나무장터는 통신판매중개자이며 상품 정보 및 거래에 대한 책임은 각 판매자에게 있습니다.</p>
+                        <p>© 2025 Tree Market. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        `;
+
+        // --- [Modals] ---
+        const LoginModal = () => `
+            <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onclick="if(event.target === this) toggleLogin(false)">
+                <div class="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl animate-slide-up">
+                    <div class="text-center mb-6">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="trees" class="text-green-700 w-8 h-8"></i></div>
+                        <h2 class="text-2xl font-bold">로그인</h2>
+                        <p class="text-stone-500 text-xs mt-2">판매 활동을 위해 닉네임을 설정해주세요.</p>
+                    </div>
+                    <form onsubmit="event.preventDefault(); login();" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1 ml-1">이메일</label>
+                            <input type="email" value="user@example.com" class="w-full p-3 bg-stone-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1 ml-1">비밀번호</label>
+                            <input type="password" value="password" class="w-full p-3 bg-stone-50 border rounded-xl outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                         <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1 ml-1">닉네임 (판매자명)</label>
+                            <input type="text" id="loginNickname" placeholder="예: 행복한나무" class="w-full p-3 bg-white border border-green-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-800 transition-colors mt-2">로그인 및 판매 시작</button>
+                    </form>
+                    <button onclick="toggleLogin(false)" class="w-full mt-4 text-stone-400 text-sm hover:text-stone-600">닫기</button>
+                </div>
+            </div>
+        `;
+
+        const SettingsModal = () => `
+            <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onclick="if(event.target === this) closeSettings()">
+                <div class="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl animate-slide-up">
+                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i> 내 정보 설정</h3>
+                    
+                    ${state.currentUser.isPremium ? `
+                        <div class="mb-6 p-4 bg-gold-gradient rounded-xl text-white shadow-md relative overflow-hidden">
+                             <div class="absolute inset-0 animate-shine opacity-30"></div>
+                             <p class="font-bold flex items-center gap-2"><i data-lucide="crown" class="w-4 h-4 fill-white"></i> Premium Member</p>
+                             <p class="text-xs opacity-90 mt-1">나무 패스 혜택을 이용 중입니다.</p>
+                        </div>
+                    ` : `
+                        <div class="mb-6 p-4 bg-stone-100 rounded-xl border border-stone-200">
+                             <p class="font-bold text-sm">일반 회원</p>
+                             <button onclick="closeSettings(); setActiveTab('profile');" class="text-xs text-green-700 font-bold mt-1 underline">나무 패스로 업그레이드 하러가기</button>
+                        </div>
+                    `}
+
+                    <div class="space-y-4">
+                         <div>
+                            <label class="block text-xs font-bold text-stone-600 mb-1 ml-1">닉네임 (판매자명) 변경</label>
+                            <input type="text" id="settingsNickname" value="${state.currentUser.name}" class="w-full p-3 bg-white border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <button onclick="saveSettings()" class="w-full py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-800 transition-colors">저장하기</button>
+                    </div>
+                    <button onclick="closeSettings()" class="w-full mt-4 text-stone-400 text-sm hover:text-stone-600">닫기</button>
+                </div>
+            </div>
+        `;
+
+        const AIChatModal = () => `
+            <div class="fixed bottom-24 right-4 z-40 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-stone-200 flex flex-col animate-slide-up h-[500px]">
+                <div class="bg-gradient-to-r from-green-700 to-emerald-600 p-4 flex justify-between items-center text-white rounded-t-2xl">
+                    <div class="flex items-center gap-2"><i data-lucide="bot" class="w-6 h-6"></i><div><p class="font-bold text-sm">AI 정원사</p><p class="text-[10px] opacity-80">무엇이든 물어보세요</p></div></div>
+                    <button onclick="toggleAIChat(false)" class="hover:bg-white/20 rounded p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-stone-50">
+                    ${state.aiChatMessages.map(msg => `
+                        <div class="flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.role === 'user' ? 'bg-green-600 text-white rounded-tr-none' : 'bg-white text-stone-800 border rounded-tl-none'}">
+                                ${msg.text}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <form onsubmit="event.preventDefault(); sendAIChat(this.aiInput.value, this.aiInput);" class="p-3 bg-white border-t flex gap-2">
+                    <input name="aiInput" type="text" placeholder="질문하기..." class="flex-1 p-2 bg-stone-100 rounded-lg outline-none focus:ring-1 focus:ring-green-500">
+                    <button type="submit" class="p-2 bg-green-700 text-white rounded-lg hover:bg-green-800"><i data-lucide="send" class="w-4 h-4"></i></button>
+                </form>
+            </div>
+        `;
+
+        const PaymentModal = (item) => `
+            <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onclick="if(event.target === this) closePayment()">
+                <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-up">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg flex items-center"><i data-lucide="shield-check" class="text-green-600 mr-2"></i> 안전결제</h3>
+                        <button onclick="closePayment()" class="text-stone-400 hover:text-stone-600">✕</button>
+                    </div>
+                    <div class="flex gap-4 mb-6 border-b pb-6">
+                        <img src="${item.image}" class="w-20 h-20 rounded-lg object-cover bg-stone-200">
+                        <div>
+                            <h4 class="font-bold text-lg">${item.name}</h4>
+                            <p class="text-sm text-stone-500 mb-1">${item.seller}님 판매</p>
+                            <p class="text-green-700 font-bold text-xl">${item.price.toLocaleString()}원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 토스 결제 UI 위젯 영역 -->
+                    <div id="payment-method"></div>
+                    <div id="agreement"></div>
+
+                    <button id="payment-button" class="w-full py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-800 transition-colors mt-4">
+                        ${item.price.toLocaleString()}원 결제하기
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // --- [Logic] 시스템 로직 ---
+        window.setActiveTab = (tab) => { state.activeTab = tab; render(); };
+        window.goHome = () => { state.viewFilter = 'all'; setActiveTab('market'); };
+        window.goTab = (tab) => { if(tab === 'market') state.viewFilter = 'all'; setActiveTab(tab); };
+        window.setViewFilter = (filter) => { state.viewFilter = filter; setActiveTab('market'); };
+
+        window.toggleLogin = (show) => { state.modals.login = show; render(); };
+        window.login = () => { 
+            const nicknameInput = document.getElementById('loginNickname');
+            const nickname = nicknameInput && nicknameInput.value ? nicknameInput.value : '행복한나무';
+            state.isLoggedIn = true; 
+            state.currentUser = { id: 'user_' + Date.now(), name: nickname, email: 'user@test.com', isPremium: false }; 
+            Toast.show(`환영합니다, ${nickname}님!`);
+            toggleLogin(false); 
+        };
+        window.logout = () => { 
+            state.isLoggedIn = false; state.currentUser = null; state.viewFilter = 'all'; 
+            Toast.show('로그아웃 되었습니다.', 'info');
+            setActiveTab('market'); 
+        };
+
+        // 설정 관리
+        window.openSettings = () => { if(!state.isLoggedIn) return; state.modals.settings = true; render(); };
+        window.closeSettings = () => { state.modals.settings = false; render(); };
+        window.saveSettings = () => {
+            const newName = document.getElementById('settingsNickname').value;
+            if(newName && newName.trim() !== '') {
+                state.listings = state.listings.map(l => l.sellerId === state.currentUser.id ? {...l, seller: newName} : l);
+                state.currentUser.name = newName;
+                Toast.show('닉네임이 변경되었습니다!');
+                closeSettings();
+                render(); 
+            }
+        };
+
+        // 멤버십 업그레이드
+        window.upgradeMembership = () => {
+            if(!confirm('나무 패스(Premium)로 업그레이드 하시겠습니까? (데모: 무료)')) return;
+            state.currentUser.isPremium = true;
+            state.listings = state.listings.map(l => l.sellerId === state.currentUser.id ? {...l, isPremium: true} : l);
+            Toast.show('나무 패스 회원이 되신 것을 축하합니다!', 'gold');
+            render();
+        };
+
+        window.handleSearch = (val) => { state.searchTerm = val; render(); const input = document.querySelector('input[type="text"]'); if(input) { input.focus(); input.setSelectionRange(val.length, val.length); } };
+        window.setCategory = (cat) => { state.selectedCategory = cat; render(); };
+
+        window.startChat = (itemId) => {
+            if (!state.isLoggedIn) return toggleLogin(true);
+            const item = state.listings.find(l => l.id === itemId);
+            if(item.sellerId === state.currentUser.id) return Toast.show('본인 상품과는 채팅할 수 없습니다.', 'error');
+            let chat = state.chats.find(c => c.itemId === itemId);
+            if (!chat) {
+                chat = { id: Date.now(), partnerName: item.seller, lastMessage: '채팅이 시작되었습니다.', time: '방금', itemId, unread: 0, messages: [] };
+                state.chats.unshift(chat);
+            }
+            state.activeChatId = chat.id;
+            setActiveTab('chat');
+        };
+        window.setActiveChat = (id) => { state.activeChatId = id; if(id) { const chat = state.chats.find(c => c.id === id); if(chat) chat.unread = 0; } render(); };
+        window.sendMessage = (text, inputEl) => {
+            if (!text.trim()) return;
+            const chat = state.chats.find(c => c.id === state.activeChatId);
+            chat.messages.push({ sender: 'me', text, time: '방금' });
+            chat.lastMessage = text;
+            inputEl.value = '';
+            render();
+            setTimeout(() => {
+                const replies = ["안녕하세요! 구매 가능합니다. 🌳", "지역이 어디신가요?", "네! 연락주셔서 감사합니다."];
+                const reply = replies[Math.floor(Math.random() * replies.length)];
+                chat.messages.push({ sender: 'partner', text: reply, time: '방금' });
+                chat.lastMessage = reply;
+                render();
+            }, 1000); 
+        };
+
+        window.openPayment = (itemId) => { 
+            if (!state.isLoggedIn) return toggleLogin(true); 
+            const item = state.listings.find(i => i.id === itemId);
+            state.modals.payment = item; 
+            render(); 
+        };
+        window.closePayment = () => { state.modals.payment = null; render(); };
+
+        // === [Toss Payments Integration] ===
+        window.renderTossWidget = async (item) => {
+            const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+            const customerKey = "xOPRSuQz2au21GSMTnWls"; // 실제로는 유저 고유 ID 사용
+            
+            try {
+                const tossPayments = TossPayments(clientKey);
+                const widgets = tossPayments.widgets({ customerKey });
+                
+                await widgets.setAmount({
+                    currency: "KRW",
+                    value: item.price,
+                });
+
+                await Promise.all([
+                    widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
+                    widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+                ]);
+
+                const button = document.getElementById("payment-button");
+                button.addEventListener("click", async function () {
+                    try {
+                        await widgets.requestPayment({
+                            orderId: "ORDER_" + Date.now(), // 고유 주문 ID
+                            orderName: item.name,
+                            successUrl: window.location.origin + "?success=true", // 데모용
+                            failUrl: window.location.origin + "?fail=true",
+                            customerEmail: state.currentUser.email,
+                            customerName: state.currentUser.name,
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        Toast.show('결제 요청 중 오류가 발생했습니다.', 'error');
+                    }
+                });
+            } catch (error) {
+                console.error("토스 위젯 로드 실패:", error);
+                document.getElementById("payment-method").innerHTML = "<p class='text-red-500 text-center'>결제 시스템을 불러오지 못했습니다.</p>";
+            }
+        };
+
+        window.updateSellForm = (key, value) => { state.sellForm[key] = value; if(key === 'isBusiness') render(); };
+        window.handleImageUpload = (input) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { state.sellForm.previewImage = e.target.result; render(); };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+        window.handleSellSubmit = (e) => {
+            e.preventDefault();
+            if (!state.sellForm.previewImage && !confirm("사진 없이 등록하시겠습니까?")) return;
+            const newItem = { 
+                id: Date.now(), 
+                ...state.sellForm, 
+                price: Number(state.sellForm.price), 
+                seller: state.currentUser.name,
+                sellerId: state.currentUser.id, 
+                isPremium: state.currentUser.isPremium,
+                image: state.sellForm.previewImage || 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=80', 
+                status: '판매중' 
+            };
+            state.listings.unshift(newItem);
+            StorageSystem.save(state);
+            Toast.show('판매글이 등록되었습니다!');
+            state.sellForm = { name: '', category: '조경수', price: '', height: '', location: '', description: '', isBusiness: false, businessName: '', businessRegNumber: '', previewImage: null };
+            setActiveTab('market');
+        };
+
+        window.deleteListing = (itemId) => {
+            if(confirm('정말 삭제하시겠습니까?')) {
+                state.listings = state.listings.filter(item => item.id !== itemId);
+                StorageSystem.save(state);
+                Toast.show('판매글이 삭제되었습니다.');
+                render();
+            }
+        };
+        
+        window.toggleStatus = (itemId) => {
+            const item = state.listings.find(i => i.id === itemId);
+            if(item) {
+                item.status = item.status === '판매중' ? '판매완료' : '판매중';
+                StorageSystem.save(state);
+                Toast.show(`상태가 '${item.status}'(으)로 변경되었습니다.`);
+                render();
+            }
+        };
+
+        window.generateDescription = async () => {
+            if(!state.sellForm.name) return Toast.show('나무 이름을 먼저 입력해주세요', 'error');
+            state.isGenerating = true; render();
+            await new Promise(r => setTimeout(r, 1500)); 
+            state.sellForm.description = `이 ${state.sellForm.name}은(는) 정말 튼튼하고 수형이 아름답습니다. ${state.sellForm.location}에서 정성껏 키웠습니다.`;
+            state.isGenerating = false; render();
+        };
+        window.toggleAIChat = (show) => { state.showAIChat = show; render(); };
+        window.sendAIChat = async (text, inputEl) => {
+            if(!text.trim()) return;
+            state.aiChatMessages.push({ role: 'user', text });
+            inputEl.value = ''; render();
+            await new Promise(r => setTimeout(r, 1000));
+            state.aiChatMessages.push({ role: 'model', text: "물주기는 '겉흙이 말랐을 때 흠뻑' 주는 것이 기본입니다. 💧" });
+            render();
+        };
+
+        render();
+    </script>
+</body>
+</html>
